@@ -1,3 +1,43 @@
+# Local Variables for Naming Conventions
+locals {
+  # Naming convention for resources
+  name_prefix = "${terraform.workspace}-${var.project_name}-${var.region}"
+
+  # Common tags for all resources
+  common_tags = {
+    Environment = terraform.workspace
+    Managed_by  = var.managed_by
+    Owner       = var.owner
+    Project     = "${var.project_name}"
+  }
+}
+
+# Local variables for resource names
+locals {
+  admin_profile_name          = "${local.name_prefix}-admin-profile"
+  app_profile_name            = "${local.name_prefix}-app-profile"
+  admin_role_name             = "${local.name_prefix}-admin-role"
+  app_role_name               = "${local.name_prefix}-app-role"
+  app_s3_policy_name          = "${local.name_prefix}-app-s3-policy"
+  ec2_assume_role_policy_name = "${local.name_prefix}-ec2-assume-role-policy"
+}
+
+###############################################################################
+
+# Create a Data Source for EC2 Trust Policy
+data "aws_iam_policy_document" "ec2_assume_role" {
+  statement {
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["ec2.amazonaws.com"]
+    }
+  }
+}
+
+#############################################################################
+
 # Create IAM roles and policies for EC2 instances
 # This module creates IAM roles and policies for EC2 instances
 
@@ -25,37 +65,4 @@ resource "aws_iam_role_policy_attachment" "admin_managed_ssm" {
 resource "aws_iam_instance_profile" "admin_profile" {
   name = local.admin_profile_name
   role = aws_iam_role.admin_role.name
-}
-
-# Create IAM role for application servers
-resource "aws_iam_role" "app_role" {
-  name               = local.app_role_name
-  assume_role_policy = data.aws_iam_policy_document.ec2_assume_role.json
-}
-
-# Inline policy: S3 (custom policy)
-resource "aws_iam_policy" "app_s3_policy" {
-  name   = local.app_s3_policy_name
-  policy = file("${path.root}/policies/app-permission.json")
-}
-
-resource "aws_iam_role_policy_attachment" "app_attach_s3" {
-  role       = aws_iam_role.app_role.name
-  policy_arn = aws_iam_policy.app_s3_policy.arn
-}
-
-# Attach AmazonEC2FullAccess and AmazonRDSFullAccess
-resource "aws_iam_role_policy_attachment" "app_attach_managed" {
-  for_each = toset([
-    var.ec2_access,
-    var.rds_access
-  ])
-
-  role       = aws_iam_role.app_role.name
-  policy_arn = each.value
-}
-
-resource "aws_iam_instance_profile" "app_profile" {
-  name = local.app_profile_name
-  role = aws_iam_role.app_role.name
 }

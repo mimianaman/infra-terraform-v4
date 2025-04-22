@@ -28,7 +28,7 @@ module "security" {
   source              = "./modules/iac-security-module"
   ssh_port            = var.ssh_port
   rds_port            = var.rds_port
-  alb_https_port = var.alb_https_port
+  alb_https_port      = var.alb_https_port
   elasticache_port    = var.elasticache_port
   kafka_port          = var.kafka_port
   outbound_port       = var.outbound_port
@@ -46,6 +46,8 @@ module "security" {
 module "load_balancer" {
   source                = "./modules/iac-loadbalancer-module"
   alb_type              = var.alb_type
+  target_type           = var.target_type
+  health_check          = var.health_check
   health_check_port     = var.health_check_port
   health_check_protocol = var.health_check_protocol
   redirect_port         = var.redirect_port
@@ -60,7 +62,7 @@ module "load_balancer" {
   owner                 = var.owner
   region                = var.region
 
-  depends_on = [module.networking, module.security]
+  depends_on = [module.networking, module.security, module.storage]
 }
 
 # Create Database Module
@@ -77,14 +79,12 @@ module "database" {
   owner             = var.owner
   region            = var.region
 
-  depends_on = [module.networking, module.security]
+  depends_on = [module.networking, module.security, module.storage]
 }
 
 # Create IAM Module
 module "iam" {
   source                                   = "./modules/iac-iam-module"
-  rds_access                               = var.rds_full_access_policy_arn
-  ec2_access                               = var.ec2_full_access_policy_arn
   iam_ssm_fullaccess_policy_arn            = var.ssm_fullaccess_policy_arn
   iam_ssm_maintenance_window_policy_arn    = var.ssm_maintenance_window_policy_arn
   iam_ssm_managed_instance_core_policy_arn = var.ssm_managed_instance_core_policy_arn
@@ -99,34 +99,34 @@ module "iam" {
 
 # Create Compute Module
 module "compute" {
-  source                                = "./modules/iac-compute-module"
-  region = var.region
-  ec2_instance_type                     = var.ec2_instance_type
-  iam_instance_profile                  = var.iam_instance_profile
-  project_name = var.project_name
-  managed_by = var.managed_by
-  owner = var.owner
-  environment = var.environment
-  ec2_instance_count = var.ec2_instance_count
+  source               = "./modules/iac-compute-module"
+  region               = var.region
+  ec2_instance_type    = var.ec2_instance_type
+  iam_instance_profile = var.iam_instance_profile
+  project_name         = var.project_name
+  managed_by           = var.managed_by
+  owner                = var.owner
+  environment          = var.environment
+  ec2_instance_count   = var.ec2_instance_count
 
-  depends_on = [module.networking, module.security]
+  depends_on = [module.networking, module.security, module.iam]
 }
 
 # Create Services Module
 module "services" {
-  source               = "./modules/iac-services-module"
-  elasticache_engine   = var.elasticache_engine
-  elasticache_port     = var.elasticache_port
-  kafka_version        = var.kafka_version
-  kafka_instance_type = var.kafka_instance_type
+  source                   = "./modules/iac-services-module"
+  elasticache_engine       = var.elasticache_engine
+  elasticache_port         = var.elasticache_port
+  kafka_version            = var.kafka_version
+  kafka_instance_type      = var.kafka_instance_type
   availability_zones_count = var.availability_zones_count
-  elasticache_node_type = var.elasticache_node_type
-  parameter_group_name = var.elasticache_parameter_group_name
-  environment          = var.environment
-  project_name         = var.project_name
-  managed_by           = var.managed_by
-  owner                = var.owner
-  region               = var.region
+  elasticache_node_type    = var.elasticache_node_type
+  parameter_group_name     = var.elasticache_parameter_group_name
+  environment              = var.environment
+  project_name             = var.project_name
+  managed_by               = var.managed_by
+  owner                    = var.owner
+  region                   = var.region
 
   depends_on = [module.networking, module.security]
 }

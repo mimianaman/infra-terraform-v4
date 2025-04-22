@@ -57,15 +57,3 @@ variable "aws_budgets_actions_with_ssm_policy_arn" {
   description = "AWS Budgets Actions Role Policy for Resource Administration with SSM ARN"
   type        = string
 }
-
-# EC2 Access Policy ARN
-variable "ec2_access" {
-  description = "EC2 access policy ARN"
-  type        = string
-}
-
-# RDS Access Policy ARN
-variable "rds_access" {
-  description = "RDS access policy ARN"
-  type        = string
-}

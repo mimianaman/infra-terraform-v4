@@ -1,3 +1,30 @@
+# Retrieve ALB Service Account Credentials
+data "aws_elb_service_account" "main" {}
+
+##############################################################################
+
+# Local Variables for Naming Conventions
+locals {
+  # Naming convention for resources
+  name_prefix = "${terraform.workspace}-${var.project_name}-${var.region}"
+
+  # Common tags for all resources
+  common_tags = {
+    Environment = terraform.workspace
+    Managed_by  = var.managed_by
+    Owner       = var.owner
+    Project     = "${var.project_name}"
+  }
+}
+
+
+# Local variables for resource names
+locals {
+  alb_logs_bucket_name = "${local.name_prefix}-alb-logs-bucket"
+}
+
+##############################################################################
+
 # Create S3 bucket for ALB logs
 resource "aws_s3_bucket" "alb_logs" {
   bucket        = local.alb_logs_bucket_name
@@ -73,5 +100,5 @@ resource "aws_ssm_parameter" "alb_logs_bucket_name" {
   type  = "String"
   value = aws_s3_bucket.alb_logs.id
 
-  depends_on = [ aws_s3_bucket.alb_logs ]
+  depends_on = [aws_s3_bucket.alb_logs]
 }

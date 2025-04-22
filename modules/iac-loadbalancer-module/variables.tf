@@ -54,6 +54,23 @@ variable "alb_type" {
   type        = string
 }
 
+# Target Type
+variable "target_type" {
+  description = "Target type for the ALB"
+  type        = string
+}
+
+# Health Check Variables
+variable "health_check" {
+  type = object({
+    path                = string
+    interval            = number
+    timeout             = number
+    healthy_threshold   = number
+    unhealthy_threshold = number
+  })
+}
+
 # ALB HTTPS Port
 variable "alb_https_port" {
   description = "HTTPS port for ALB"

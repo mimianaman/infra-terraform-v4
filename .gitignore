@@ -23,3 +23,6 @@ terraform.tfvars.json
 
 # Ignore lock files (optional, depends on your team workflow)
 .terraform.lock.hcl
+
+*.lock.hcl
+

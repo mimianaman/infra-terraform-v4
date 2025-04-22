@@ -1,5 +1,4 @@
 # Terraform Variables for Networking Module
-
 # Region
 variable "region" {
   description = "AWS region to deploy resources"

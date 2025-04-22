@@ -57,7 +57,7 @@ variable "allowed_cidr_blocks" {
 
 # ALB HTTPS Port
 variable "alb_https_port" {
- description = "HTTPS port for ALB"
+  description = "HTTPS port for ALB"
   type        = number
 }
 

@@ -88,6 +88,24 @@ variable "alb_type" {
   type        = string
 }
 
+# ALB Target Type
+variable "target_type" {
+  description = "ALB Target Type"
+  type        = string
+
+}
+
+# Health Check Variables
+variable "health_check" {
+  type = object({
+    path                = string
+    interval            = number
+    timeout             = number
+    healthy_threshold   = number
+    unhealthy_threshold = number
+  })
+}
+
 # Health Check Port
 variable "health_check_port" {
   description = "Port for health check"
