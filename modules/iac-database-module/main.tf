@@ -18,7 +18,7 @@ locals {
   db_name              = "${local.name_prefix}-db"
   db_instance_name     = "${local.name_prefix}-db-instance"
   db_subnet_group_name = "${local.name_prefix}-db-subnet-group"
-  secret_name          = "${local.name_prefix}-secret-payjack-db-secrtssss"
+  secret_name          = "${local.name_prefix}-secret-payjack-db-secrtsssss"
   db_identifier        = "${local.name_prefix}-db-instance"
 }
 
