@@ -5,12 +5,12 @@ output "rds_endpoint" {
 
 # Output RDS username
 output "rds_username" {
-  value = aws_db_instance.rds.username
+  value     = aws_db_instance.rds.username
   sensitive = true
 }
 
 # Output RDS password
 output "rds_password" {
-  value = aws_db_instance.rds.password
+  value     = aws_db_instance.rds.password
   sensitive = true
 }

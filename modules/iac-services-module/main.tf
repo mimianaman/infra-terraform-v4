@@ -1,7 +1,7 @@
 # Local Variables for Naming Convention
 locals {
   # Naming convention for resources
-  name_prefix = "${terraform.workspace}-${var.project_name}-${var.region}"
+  name_prefix = "${terraform.workspace}-${var.project_name}"
 
   # Common tags for all resources
   common_tags = {
@@ -22,7 +22,7 @@ locals {
 #############################################################################
 
 # Retrieve Data for Services Module
-# Fetch Private Subnet IDs from SSM Parameter Store
+# Retrieve Private Subnet IDs from SSM Parameter Store
 data "aws_ssm_parameter" "db_private_subnet_ids" {
   name = "/${local.name_prefix}/db_subnet_ids"
 }
@@ -31,12 +31,12 @@ data "aws_ssm_parameter" "kafa_sg_id" {
   name = "/${local.name_prefix}/kafka_sg_id"
 }
 
-# Fetch Elasticache SG Group IDs from SSM Parameter Store
+# Retrieve Elasticache SG Group IDs from SSM Parameter Store
 data "aws_ssm_parameter" "elasticache_sg_id" {
   name = "/${local.name_prefix}/elasticache_sg_id"
 }
 
-# Fetch Kafka SG Group IDs from SSM Parameter Store
+# Retrieve Kafka SG Group IDs from SSM Parameter Store
 data "aws_ssm_parameter" "kafka_sg_id" {
   name = "/${local.name_prefix}/kafka_sg_id"
 }

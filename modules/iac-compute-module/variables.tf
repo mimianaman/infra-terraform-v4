@@ -30,22 +30,64 @@ variable "project_name" {
   type        = string
 }
 
-
-# EC2 Specific Variables
-variable "ec2_instance_count" {
-  description = "Number of EC2 instances"
-  type        = number
-}
-
-
 # Instance Type
 variable "ec2_instance_type" {
   description = "Instance type for the EC2 instance"
   type        = string
 }
 
-# EC2 Instance Profile
-variable "iam_instance_profile" {
-  description = "IAM instance profile for the EC2 instance"
+# Container Port
+variable "container_port" {
+  description = "Port for the container"
+  type        = number
+}
+
+# App Version
+variable "app_version" {
+  description = "The version of the application"
   type        = string
+  default     = "1.0.0"
+}
+
+# Task Definition CPU
+variable "task_cpu" {
+  description = "CPu allocation for Task Definition"
+  type = number
+}
+
+
+# Memory Allocation for Task Definition
+variable "task_memory" {
+  description = "Memory allocation for Task Definition"
+  type = number
+}
+
+# Container User
+variable "container_user" {
+  description = "User for the container"
+  type = string
+}
+
+# Availability Zones Count
+variable "availability_zones_count" {
+  description = "Number of AZs to use"
+  type        = number
+}
+
+# ECS Maximum Capacity
+variable "ecs_max_capacity" {
+  description = "Maximum capacity for the ECS cluster"
+  type = number
+}
+
+# CPU Target Value
+variable "cpu_target_value" {
+  description = "Target value for CPU utilization"
+  type = number
+}
+
+# Memory Target Value
+variable "memory_target_value" {
+  description = "Target value for memory utilization"
+  type = number
 }

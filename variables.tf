@@ -54,122 +54,56 @@ variable "availability_zones_count" {
 
 # SSH Port
 variable "ssh_port" {
-  description = "SSH port for EC2 instances"
+  description = "value of ssh port"
   type        = number
 }
 
-# RDS Port
-variable "rds_port" {
-  description = "RDS port for RDS instances"
+# My IP
+variable "my_ip" {
+  description = "value of my ip"
+  type        = string
+}
+
+# HTTP Port
+variable "http_port" {
+  description = "value of http port"
   type        = number
 }
 
-# Outbound Port
-variable "outbound_port" {
-  description = "Outbound port for security group rules"
+# HTTPS Port
+variable "https_port" {
+  description = "value of https port"
   type        = number
 }
 
-# Protocol
-variable "protocol" {
-  description = "Protocol for security group rules"
+# Public Destination CIDR
+variable "public_destination_cidr" {
+  description = "value of public destination cidr"
   type        = string
 }
 
-# ALB HTTPS Port
-variable "alb_https_port" {
-  description = "HTTPS port for ALB"
+# MySQL Port
+variable "mysql_port" {
+  description = "value of mysql port"
   type        = number
 }
 
-# ALB Type
-variable "alb_type" {
-  description = "Type of the ALB"
-  type        = string
-}
-
-# ALB Target Type
-variable "target_type" {
-  description = "ALB Target Type"
-  type        = string
-
-}
-
-# Health Check Variables
-variable "health_check" {
-  type = object({
-    path                = string
-    interval            = number
-    timeout             = number
-    healthy_threshold   = number
-    unhealthy_threshold = number
-  })
-}
-
-# Health Check Port
-variable "health_check_port" {
-  description = "Port for health check"
+# Postgres Port
+variable "postgres_port" {
+  description = "value of postgres port"
   type        = number
 }
 
-# Health Check Protocol
-variable "health_check_protocol" {
-  description = "Protocol for health check"
-  type        = string
-}
-
-# Redirect Port
-variable "redirect_port" {
-  description = "Port for redirecting HTTP to HTTPS"
+# Redis Port
+variable "redis_port" {
+  description = "value of redis port"
   type        = number
 }
 
-# Traffic Port
-variable "traffic_port" {
-  description = "Port for traffic"
+# Kafka Port
+variable "kafka_port" {
+  description = "value of kafka port"
   type        = number
-}
-
-# Test Port
-variable "test_port" {
-  description = "Test port for ALB listener"
-  type        = number
-}
-
-# Test Protocol
-variable "test_protocol" {
-  description = "Test protocol for ALB listener"
-  type        = string
-}
-
-# Traffic Protocol
-variable "traffic_protocol" {
-  description = "Protocol for traffic"
-  type        = string
-}
-
-# DB Instance Class
-variable "db_instance_class" {
-  description = "DB instance class"
-  type        = string
-}
-
-# DB Storage Size
-variable "db_storage_size" {
-  description = "DB storage size in GB"
-  type        = number
-}
-
-# DB Engine
-variable "db_engine" {
-  description = "DB engine"
-  type        = string
-}
-
-# DB Username
-variable "db_username" {
-  description = "Username for the database"
-  type        = string
 }
 
 # SSM Full Access Policy ARN
@@ -214,68 +148,170 @@ variable "rds_full_access_policy_arn" {
   type        = string
 }
 
-# EC2 Instance type
+# Health Check Port
+variable "health_check_port" {
+  description = "Port for health check"
+  type        = number
+}
+
+# Health Check Protocol
+variable "health_check_protocol" {
+  description = "Protocol for health check"
+  type        = string
+}
+
+# ALB Type
+variable "alb_type" {
+  description = "Type of the ALB"
+  type        = string
+}
+
+# Target Type
+variable "target_type" {
+  description = "Target type for the ALB"
+  type        = string
+}
+
+# Health Check Variables
+variable "health_check" {
+  type = object({
+    path                = string
+    interval            = number
+    timeout             = number
+    healthy_threshold   = number
+    unhealthy_threshold = number
+  })
+}
+
+# Instance Type
 variable "ec2_instance_type" {
-  description = "EC2 instance type"
+  description = "Instance type for the EC2 instance"
   type        = string
 }
 
-# EC2 Instance Count
-variable "ec2_instance_count" {
-  description = "Number of EC2 instances"
+# Container Port
+variable "container_port" {
+  description = "Port for the container"
   type        = number
 }
 
-# EC2 Instance Profile
-variable "iam_instance_profile" {
-  description = "IAM instance profile for the EC2 instance"
+# App Version
+variable "app_version" {
+  description = "The version of the application"
   type        = string
+  default     = "1.0.0"
 }
 
-# Elasticache Node Type
-variable "elasticache_node_type" {
-  description = "Node type for the cluster"
-  type        = string
+# Task Definition CPU
+variable "task_cpu" {
+  description = "CPu allocation for Task Definition"
+  type = number
 }
 
-# Parameter Group Name
-variable "elasticache_parameter_group_name" {
-  description = "Parameter group name for the cluster"
-  type        = string
+# Memory Allocation for Task Definition
+variable "task_memory" {
+  description = "Memory allocation for Task Definition"
+  type = number
 }
 
-# Kafka Version
-variable "kafka_version" {
-  description = "Engine version for the cluster"
-  type        = string
+# Container User
+variable "container_user" {
+  description = "User for the container"
+  type = string
 }
 
-# AWS ElastiCache Engine
-variable "elasticache_engine" {
-  description = "Cluster engine for the ElastiCache cluster"
-  type        = string
+# ECS Maximum Capacity
+variable "ecs_max_capacity" {
+  description = "Maximum capacity for the ECS cluster"
+  type = number
 }
 
-# ElastiCache Port
-variable "elasticache_port" {
-  description = "Port for the ElastiCache cluster"
-  type        = number
+# CPU Target Value
+variable "cpu_target_value" {
+  description = "Target value for CPU utilization"
+  type = number
 }
 
-# Kafka Port
-variable "kafka_port" {
-  description = "Kafka port"
-  type        = number
+# Memory Target Value
+variable "memory_target_value" {
+  description = "Target value for memory utilization"
+  type = number
 }
 
-# Kafka Instance Type
-variable "kafka_instance_type" {
-  description = "Kafka instance type"
-  type        = string
-}
+# # DB Instance Class
+# variable "db_instance_class" {
+#   description = "DB instance class"
+#   type        = string
+# }
 
-# DB name
-variable "db_name" {
-  description = "Database name"
-  type        = string
-}
+# # DB Storage Size
+# variable "db_storage_size" {
+#   description = "DB storage size in GB"
+#   type        = number
+# }
+
+# # DB Engine
+# variable "db_engine" {
+#   description = "DB engine"
+#   type        = string
+# }
+
+# # DB Username
+# variable "db_username" {
+#   description = "Username for the database"
+#   type        = string
+# }
+
+# # EC2 Instance Count
+# variable "ec2_instance_count" {
+#   description = "Number of EC2 instances"
+#   type        = number
+# }
+
+# # Elasticache Node Type
+# variable "elasticache_node_type" {
+#   description = "Node type for the cluster"
+#   type        = string
+# }
+
+# # Parameter Group Name
+# variable "elasticache_parameter_group_name" {
+#   description = "Parameter group name for the cluster"
+#   type        = string
+# }
+
+# # Kafka Version
+# variable "kafka_version" {
+#   description = "Engine version for the cluster"
+#   type        = string
+# }
+
+# # AWS ElastiCache Engine
+# variable "elasticache_engine" {
+#   description = "Cluster engine for the ElastiCache cluster"
+#   type        = string
+# }
+
+# # ElastiCache Port
+# variable "elasticache_port" {
+#   description = "Port for the ElastiCache cluster"
+#   type        = number
+# }
+
+# # Kafka Port
+# variable "kafka_port" {
+#   description = "Kafka port"
+#   type        = number
+# }
+
+# # Kafka Instance Type
+# variable "kafka_instance_type" {
+#   description = "Kafka instance type"
+#   type        = string
+# }
+
+# # DB name
+# variable "db_name" {
+#   description = "Database name"
+#   type        = string
+# }

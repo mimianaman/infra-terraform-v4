@@ -1,6 +1,6 @@
 # Local Variables for Naming conventions
 locals {
-  name_prefix = "${terraform.workspace}-${var.project_name}-${var.region}"
+  name_prefix = "${terraform.workspace}-${var.project_name}"
 
   # Common tags for all resources
   common_tags = {
@@ -14,45 +14,49 @@ locals {
 # Local variables for resource names
 locals {
   alb_name             = "${local.name_prefix}-alb"
-  target_group_name    = "${local.name_prefix}-tg"
+  target_group_name    = "${local.name_prefix}-tg-newer"
   alb_logs_bucket_name = "${local.name_prefix}-alb-logs"
 }
 
 ###########################################################################
 
-# Fetch Networking Credentials from SSM Parameter Store
+# Retrieve Networking Credentials from SSM Parameter Store
 # To be referenced in the ALB Module
 
-# Fetch Availability Zones
+# Retrieve Availability Zones
 data "aws_availability_zones" "available" {
   state = "available"
 }
 
-# Fetch VPC ID from SSM Parameter Store
+# Retrieve VPC ID from SSM Parameter Store
 data "aws_ssm_parameter" "vpc_id" {
   name = "/${local.name_prefix}/vpc_id"
 }
 
-# Fetch Subnet IDS from SSM Parameter Store
+# Retrieve Subnet IDS from SSM Parameter Store
 data "aws_ssm_parameter" "public_subnet_ids" {
   name = "/${local.name_prefix}/public_subnet_ids"
 }
 
-
-# Fetch Security ALB Security Group IDs from SSM Parameter Store
+# Retrieve Security ALB Security Group IDs from SSM Parameter Store
 data "aws_ssm_parameter" "alb_sg_id" {
   name = "/${local.name_prefix}/alb_sg_id"
 }
 
-# Fetch Log Bucket From SSM Parameter Store
+# Retrieve Log Bucket From SSM Parameter Store
 data "aws_s3_bucket" "alb_logs" {
   bucket = "${local.name_prefix}-alb-logs-bucket"
+}
+
+# Retrieve WAF ACL ARN from SSM Parameter Store
+data "aws_ssm_parameter" "waf_acl_arn" {
+  name = "/${local.name_prefix}/waf_acl_arn"
 }
 
 ###########################################################################
 # Create ELB Resources
 
-# Create ELB Target Group
+# Create ALB Target Group
 resource "aws_lb_target_group" "alb_target_group" {
   name        = local.target_group_name
   port        = var.health_check_port
@@ -73,7 +77,6 @@ resource "aws_lb_target_group" "alb_target_group" {
       name,
       port,
       protocol,
-      target_type,
       vpc_id
     ]
     create_before_destroy = true
@@ -106,6 +109,24 @@ resource "aws_lb" "alb" {
   tags = merge(local.common_tags, {
     Name = local.alb_name
   })
+}
+
+# Create ALB Listener for HTTP (handles HTTP traffic)
+resource "aws_lb_listener" "http_listener" {
+  load_balancer_arn = aws_lb.alb.arn
+  port              = var.http_port
+  protocol          = "HTTP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.alb_target_group.arn
+  }
+}
+
+# Associate WAF with ALB
+resource "aws_wafv2_web_acl_association" "waf_alb_association" {
+  resource_arn = aws_ssm_parameter.alb_arn.value
+  web_acl_arn  = data.aws_ssm_parameter.waf_acl_arn.value
 }
 
 ##############################################################################

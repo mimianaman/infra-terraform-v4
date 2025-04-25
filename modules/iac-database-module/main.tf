@@ -1,7 +1,7 @@
 # Local Variables for Naming Conventions
 locals {
   # Naming convention for resources
-  name_prefix = "${terraform.workspace}-${var.project_name}-${var.region}"
+  name_prefix = "${terraform.workspace}-${var.project_name}"
 
   # Common tags for all resources
   common_tags = {
@@ -18,7 +18,7 @@ locals {
   db_name              = "${local.name_prefix}-db"
   db_instance_name     = "${local.name_prefix}-db-instance"
   db_subnet_group_name = "${local.name_prefix}-db-subnet-group"
-  secret_name          = "${local.name_prefix}-secret-payjack-db-secrtsssss"
+  secret_name          = "${local.name_prefix}-secret-payjack-db-secrtsssssss"
   db_identifier        = "${local.name_prefix}-db-instance"
 }
 
@@ -73,7 +73,7 @@ locals {
 ##############################################################################
 
 # Retrieve RDS Data from SSM Parameter Store
-# Fetch Private Subnet IDs from SSM Parameter Store
+# Retrieve Private Subnet IDs from SSM Parameter Store
 data "aws_ssm_parameter" "db_private_subnet_ids" {
   name = "/${local.name_prefix}/db_subnet_ids"
 }
@@ -84,7 +84,7 @@ data "aws_secretsmanager_secret_version" "db_creds" {
   depends_on = [aws_secretsmanager_secret_version.rds]
 }
 
-# Fetch RDS Security Group ID from SSM Parameter Store
+# Retrieve RDS Security Group ID from SSM Parameter Store
 data "aws_ssm_parameter" "rds_sg_id" {
   name = "/${local.name_prefix}/rds_sg_id"
 }
@@ -105,7 +105,7 @@ resource "aws_db_instance" "rds" {
   db_subnet_group_name   = aws_db_subnet_group.rds.name
 
   lifecycle {
-    ignore_changes = [ 
+    ignore_changes = [
       username,
       password,
       engine_version,
@@ -118,7 +118,7 @@ resource "aws_db_instance" "rds" {
       instance_class,
       db_name,
       vpc_security_group_ids
-     ]
+    ]
   }
 
   tags = merge(

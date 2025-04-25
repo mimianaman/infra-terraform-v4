@@ -25,61 +25,23 @@ module "networking" {
 
 # Create Security Module
 module "security" {
-  source              = "./modules/iac-security-module"
-  ssh_port            = var.ssh_port
-  rds_port            = var.rds_port
-  alb_https_port      = var.alb_https_port
-  elasticache_port    = var.elasticache_port
-  kafka_port          = var.kafka_port
-  outbound_port       = var.outbound_port
-  allowed_cidr_blocks = var.allowed_cidr_blocks
-  environment         = var.environment
-  project_name        = var.project_name
-  managed_by          = var.managed_by
-  owner               = var.owner
-  region              = var.region
+  source                  = "./modules/iac-security-module"
+  ssh_port                = var.ssh_port
+  mysql_port              = var.mysql_port
+  http_port               = var.http_port
+  https_port              = var.https_port
+  my_ip                   = var.my_ip
+  redis_port              = var.redis_port
+  kafka_port              = var.kafka_port
+  postgres_port           = var.postgres_port
+  public_destination_cidr = var.public_destination_cidr
+  environment             = var.environment
+  project_name            = var.project_name
+  managed_by              = var.managed_by
+  owner                   = var.owner
+  region                  = var.region
 
   depends_on = [module.networking]
-}
-
-# Create Load Balancer Module
-module "load_balancer" {
-  source                = "./modules/iac-loadbalancer-module"
-  alb_type              = var.alb_type
-  target_type           = var.target_type
-  health_check          = var.health_check
-  health_check_port     = var.health_check_port
-  health_check_protocol = var.health_check_protocol
-  redirect_port         = var.redirect_port
-  test_port             = var.test_port
-  test_protocol         = var.test_protocol
-  traffic_port          = var.traffic_port
-  traffic_protocol      = var.traffic_protocol
-  alb_https_port        = var.alb_https_port
-  environment           = var.environment
-  project_name          = var.project_name
-  managed_by            = var.managed_by
-  owner                 = var.owner
-  region                = var.region
-
-  depends_on = [module.networking, module.security, module.storage]
-}
-
-# Create Database Module
-module "database" {
-  source            = "./modules/iac-database-module"
-  db_instance_class = var.db_instance_class
-  db_name           = var.db_name
-  db_engine         = var.db_engine
-  db_storage_size   = var.db_storage_size
-  db_username       = var.db_username
-  environment       = var.environment
-  project_name      = var.project_name
-  managed_by        = var.managed_by
-  owner             = var.owner
-  region            = var.region
-
-  depends_on = [module.networking, module.security, module.storage]
 }
 
 # Create IAM Module
@@ -97,36 +59,78 @@ module "iam" {
   region                                   = var.region
 }
 
+# Create Load Balancer Module
+module "load_balancer" {
+  source                = "./modules/iac-loadbalancer-module"
+  alb_type              = var.alb_type
+  target_type           = var.target_type
+  health_check          = var.health_check
+  health_check_port     = var.health_check_port
+  health_check_protocol = var.health_check_protocol
+  http_port             = var.http_port
+  https_port            = var.https_port
+  environment           = var.environment
+  project_name          = var.project_name
+  managed_by            = var.managed_by
+  owner                 = var.owner
+  region                = var.region
+
+  depends_on = [module.networking, module.security, module.storage]
+}
+
 # Create Compute Module
 module "compute" {
   source               = "./modules/iac-compute-module"
   region               = var.region
   ec2_instance_type    = var.ec2_instance_type
-  iam_instance_profile = var.iam_instance_profile
   project_name         = var.project_name
   managed_by           = var.managed_by
   owner                = var.owner
   environment          = var.environment
-  ec2_instance_count   = var.ec2_instance_count
-
-  depends_on = [module.networking, module.security, module.iam]
-}
-
-# Create Services Module
-module "services" {
-  source                   = "./modules/iac-services-module"
-  elasticache_engine       = var.elasticache_engine
-  elasticache_port         = var.elasticache_port
-  kafka_version            = var.kafka_version
-  kafka_instance_type      = var.kafka_instance_type
+  container_port = var.container_port
+  container_user = var.container_user
+  task_cpu = var.task_cpu
+  task_memory = var.task_memory
+  cpu_target_value = var.cpu_target_value
+  memory_target_value = var.memory_target_value
+  ecs_max_capacity = var.ecs_max_capacity
   availability_zones_count = var.availability_zones_count
-  elasticache_node_type    = var.elasticache_node_type
-  parameter_group_name     = var.elasticache_parameter_group_name
-  environment              = var.environment
-  project_name             = var.project_name
-  managed_by               = var.managed_by
-  owner                    = var.owner
-  region                   = var.region
 
-  depends_on = [module.networking, module.security]
+  depends_on = [module.load_balancer]
 }
+
+# # Create Database Module
+# module "database" {
+#   source            = "./modules/iac-database-module"
+#   db_instance_class = var.db_instance_class
+#   db_name           = var.db_name
+#   db_engine         = var.db_engine
+#   db_storage_size   = var.db_storage_size
+#   db_username       = var.db_username
+#   environment       = var.environment
+#   project_name      = var.project_name
+#   managed_by        = var.managed_by
+#   owner             = var.owner
+#   region            = var.region
+
+#   depends_on = [module.networking, module.security, module.storage]
+# }
+
+# # Create Services Module
+# module "services" {
+#   source                   = "./modules/iac-services-module"
+#   elasticache_engine       = var.elasticache_engine
+#   elasticache_port         = var.elasticache_port
+#   kafka_version            = var.kafka_version
+#   kafka_instance_type      = var.kafka_instance_type
+#   availability_zones_count = var.availability_zones_count
+#   elasticache_node_type    = var.elasticache_node_type
+#   parameter_group_name     = var.elasticache_parameter_group_name
+#   environment              = var.environment
+#   project_name             = var.project_name
+#   managed_by               = var.managed_by
+#   owner                    = var.owner
+#   region                   = var.region
+
+#   depends_on = [module.networking, module.security]
+# }

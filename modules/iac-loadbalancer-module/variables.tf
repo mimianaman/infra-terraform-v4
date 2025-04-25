@@ -42,9 +42,15 @@ variable "health_check_protocol" {
   type        = string
 }
 
-# Redirect Port
-variable "redirect_port" {
-  description = "Port for redirecting HTTP to HTTPS"
+# HTTP Port
+variable "http_port" {
+  description = "HTTP port"
+  type        = number
+}
+
+# ALB HTTPS Port
+variable "https_port" {
+  description = "HTTPS port for ALB"
   type        = number
 }
 
@@ -69,34 +75,4 @@ variable "health_check" {
     healthy_threshold   = number
     unhealthy_threshold = number
   })
-}
-
-# ALB HTTPS Port
-variable "alb_https_port" {
-  description = "HTTPS port for ALB"
-  type        = number
-}
-
-# Traffic Port
-variable "traffic_port" {
-  description = "Port for traffic"
-  type        = number
-}
-
-# Test Port
-variable "test_port" {
-  description = "Test port for ALB listener"
-  type        = number
-}
-
-# Test Protocol
-variable "test_protocol" {
-  description = "Test protocol for ALB listener"
-  type        = string
-}
-
-# Traffic Protocol
-variable "traffic_protocol" {
-  description = "Protocol for traffic"
-  type        = string
 }

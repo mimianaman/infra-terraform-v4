@@ -1,6 +1,7 @@
 # Configure AWS Provider
 provider "aws" {
-  region = var.region
+  region  = var.region
+  profile = "OTAssumeInfraBeginnerPermSet-509399591563"
 }
 
 

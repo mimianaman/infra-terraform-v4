@@ -30,51 +30,56 @@ variable "project_name" {
   type        = string
 }
 
-# RDS Port
-variable "rds_port" {
-  description = "Port for RDS instance"
-  type        = number
-}
-
-# Outbound Port
-variable "outbound_port" {
-  description = "Outbound port for security group"
-  type        = number
-}
-
-# Protocol
-variable "protocol" {
-  description = "Protocol for security group rules"
-  type        = string
-  default     = "tcp"
-}
-
-# Allowed CIDR Blocks
-variable "allowed_cidr_blocks" {
-  description = "Allowed CIDR blocks for security group rules"
-  type        = list(string)
-}
-
-# ALB HTTPS Port
-variable "alb_https_port" {
-  description = "HTTPS port for ALB"
-  type        = number
-}
-
-# ALB SSH Port
+# SSH Port
 variable "ssh_port" {
-  description = "SSH port for ALB"
+  description = "value of ssh port"
   type        = number
 }
 
-# ElastiCache Port
-variable "elasticache_port" {
-  description = "ElastiCache port"
+# My IP
+variable "my_ip" {
+  description = "value of my ip"
+  type        = string
+}
+
+# HTTP Port
+variable "http_port" {
+  description = "value of http port"
+  type        = number
+}
+
+# HTTPS Port
+variable "https_port" {
+  description = "value of https port"
+  type        = number
+}
+
+# Public Destination CIDR
+variable "public_destination_cidr" {
+  description = "value of public destination cidr"
+  type        = string
+}
+
+# MySQL Port
+variable "mysql_port" {
+  description = "value of mysql port"
+  type        = number
+}
+
+# Postgres Port
+variable "postgres_port" {
+  description = "value of postgres port"
+  type        = number
+}
+
+# Redis Port
+variable "redis_port" {
+  description = "value of redis port"
   type        = number
 }
 
 # Kafka Port
 variable "kafka_port" {
-  description = "Kafka port"
+  description = "value of kafka port"
   type        = number
 }

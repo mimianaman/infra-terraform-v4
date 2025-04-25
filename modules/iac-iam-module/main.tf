@@ -1,7 +1,7 @@
 # Local Variables for Naming Conventions
 locals {
   # Naming convention for resources
-  name_prefix = "${terraform.workspace}-${var.project_name}-${var.region}"
+  name_prefix = "${terraform.workspace}-${var.project_name}"
 
   # Common tags for all resources
   common_tags = {
@@ -14,12 +14,17 @@ locals {
 
 # Local variables for resource names
 locals {
-  admin_profile_name          = "${local.name_prefix}-admin-profile"
-  app_profile_name            = "${local.name_prefix}-app-profile"
-  admin_role_name             = "${local.name_prefix}-admin-role"
-  app_role_name               = "${local.name_prefix}-app-role"
-  app_s3_policy_name          = "${local.name_prefix}-app-s3-policy"
-  ec2_assume_role_policy_name = "${local.name_prefix}-ec2-assume-role-policy"
+  ec2_profile_name               = "${local.name_prefix}-ec2-profile"
+  ec2_role_name                  = "${local.name_prefix}-ec2-role"
+  app_role_name                  = "${local.name_prefix}-app-role"
+  app_s3_policy_name             = "${local.name_prefix}-app-s3-policy"
+  ec2_assume_role_policy_name    = "${local.name_prefix}-ec2-assume-role-policy"
+  ecs_task_assume_role_name      = "${local.name_prefix}-ecs-task-execution-role"
+  ecs_task_execution_policy_name = "${local.name_prefix}-ecs-task-execution-role-policy"
+  ecr_pull_policy_name           = "${local.name_prefix}-ecr-pull-policy"
+  task_role_name                 = "${local.name_prefix}-task-role"
+  ecs_execution_role_name        = "${local.name_prefix}-ecs-execution-role"
+  ecs_task_execution_role_name   = "${local.name_prefix}-ecs-task-execution-role"
 }
 
 ###############################################################################
@@ -36,19 +41,29 @@ data "aws_iam_policy_document" "ec2_assume_role" {
   }
 }
 
-#############################################################################
+# Retrieve Amazon ECS Task Execution Role Policy
+data "aws_iam_policy" "ecs_task_execution_policy" {
+  name = "AmazonECSTaskExecutionRolePolicy"
+}
+
+# Retrieve Amazon SSM ReadOnlyAccess Policy
+data "aws_iam_policy" "ssm_read_only" {
+  name = "AmazonSSMReadOnlyAccess"
+}
+
+############################################################################# 
 
 # Create IAM roles and policies for EC2 instances
 # This module creates IAM roles and policies for EC2 instances
 
 # Create Admin Role
-resource "aws_iam_role" "admin_role" {
-  name               = "admin-ssm-role"
+resource "aws_iam_role" "ec2_role" {
+  name               = local.ec2_role_name
   assume_role_policy = data.aws_iam_policy_document.ec2_assume_role.json
 }
 
 # Attach AWS-managed policies
-resource "aws_iam_role_policy_attachment" "admin_managed_ssm" {
+resource "aws_iam_role_policy_attachment" "ec2_managed_ssm" {
   for_each = toset([
     var.iam_ssm_fullaccess_policy_arn,
     var.iam_ssm_maintenance_window_policy_arn,
@@ -57,12 +72,83 @@ resource "aws_iam_role_policy_attachment" "admin_managed_ssm" {
     var.aws_budgets_actions_with_ssm_policy_arn,
   ])
 
-  role       = aws_iam_role.admin_role.name
+  role       = aws_iam_role.ec2_role.name
   policy_arn = each.value
 }
 
 # Create instance profile for the admin role
-resource "aws_iam_instance_profile" "admin_profile" {
-  name = local.admin_profile_name
-  role = aws_iam_role.admin_role.name
+resource "aws_iam_instance_profile" "ec2_profile" {
+  name = local.ec2_profile_name
+  role = aws_iam_role.ec2_role.name
+}
+
+# Create Roles For ECS
+# Create ECS Task Execution Role and Attach Assume Role Policy
+resource "aws_iam_role" "ecs_task_execution_role" {
+  name               = local.ecs_task_execution_role_name
+  assume_role_policy = file("${path.root}/policies/ecs-task-assume-role-policy.json")
+
+  tags = local.common_tags
+}
+
+# Create ECS Task Execution Role Policy and Attach to ECS Task Execution Role
+resource "aws_iam_role_policy" "ecs_task_execution_role_policy" {
+  name   = local.ecs_task_execution_policy_name
+  role   = aws_iam_role.ecs_task_execution_role.id
+  policy = file("${path.root}/policies/ecs-task-execution-role-policy.json")
+}
+
+# Create ECR Pull Policy and Attach to AWS ECS Execution Role
+resource "aws_iam_role_policy" "ecr_pull_policy" {
+  name   = local.ecr_pull_policy_name
+  role   = aws_iam_role.ecs_execution_role.id
+  policy = file("${path.root}/policies/ecr-pull-policy.json")
+}
+
+# Create ECS Task Role and Attach Assume Role Policy
+resource "aws_iam_role" "ecs_task_role" {
+  name = local.task_role_name
+
+  assume_role_policy = file("${path.root}/policies/ecs-assume-role-policy.json")
+}
+
+# Create ECS Execution Role and Attach Assume Role Policy
+resource "aws_iam_role" "ecs_execution_role" {
+  name = local.ecs_execution_role_name
+
+  assume_role_policy = file("${path.root}/policies/ecs-assume-role-policy.json")
+}
+
+# Attach ECS Task Execution Role policy to Execution Role
+resource "aws_iam_role_policy_attachment" "ecs_task_execution" {
+  role = aws_iam_role.ecs_execution_role.name
+
+  policy_arn = data.aws_iam_policy.ecs_task_execution_policy.arn
+}
+
+# Add SSM access for secrets if needed
+resource "aws_iam_role_policy_attachment" "ecs_task_ssm" {
+  role       = aws_iam_role.ecs_task_role.name
+  policy_arn = data.aws_iam_policy.ssm_read_only.arn
+}
+
+# ---------------------------------------------------------------------------------------
+
+# Store ECS Execution Role ARN in SSM Parameter Store
+resource "aws_ssm_parameter" "ecs_execution_role_arn" {
+  name  = "/${local.name_prefix}/ecs_execution_role_arn"
+  type  = "String"
+  value = aws_iam_role.ecs_execution_role.arn
+  
+  tags  = local.common_tags
+}
+
+
+# Store ECS Task Role ARN in SSM Parameter Store
+resource "aws_ssm_parameter" "ecs_task_role_arn" {
+  name  = "/${local.name_prefix}/ecs_task_role_arn"
+  type  = "String"
+  value = aws_iam_role.ecs_task_role.arn
+  
+  tags  = local.common_tags
 }

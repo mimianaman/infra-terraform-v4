@@ -1,7 +1,7 @@
 # Local Variables for Naming Conventions
 locals {
   # Naming convention for resources
-  name_prefix = "${terraform.workspace}-${var.project_name}-${var.region}"
+  name_prefix = "${terraform.workspace}-${var.project_name}"
 
   # Common tags for all resources
   common_tags = {
@@ -75,7 +75,8 @@ resource "aws_subnet" "public" {
   map_public_ip_on_launch = true
 
   tags = merge(local.common_tags, {
-    Name                     = "${local.public_subnet_name}-${count.index + 1}"
+    # Name subnet according to az
+    Name                     = "${local.public_subnet_name}-${element(data.aws_availability_zones.available.names, count.index)}"
     "kubernetes.io/role/elb" = "1" # For EKS if needed later
     "Type"                   = "Public"
   })
@@ -89,7 +90,7 @@ resource "aws_subnet" "app_private" {
   availability_zone = element(data.aws_availability_zones.available.names, count.index)
 
   tags = merge(local.common_tags, {
-    Name                     = "${local.app_subnet_name}-${count.index + 1}"
+    Name                     = "${local.app_subnet_name}-${element(data.aws_availability_zones.available.names, count.index)}"
     "kubernetes.io/role/elb" = "1" # For EKS if needed later
     "Type"                   = "Private"
   })
@@ -103,7 +104,7 @@ resource "aws_subnet" "db_private" {
   availability_zone = element(data.aws_availability_zones.available.names, count.index)
 
   tags = merge(local.common_tags, {
-    Name                     = "${local.private_subnet_name}-${count.index + 1}"
+    Name                     = "${local.private_subnet_name}-${element(data.aws_availability_zones.available.names, count.index)}"
     "kubernetes.io/role/elb" = "1" # For EKS if needed later
     "Type"                   = "Private"
   })
@@ -203,7 +204,7 @@ resource "aws_ssm_parameter" "public_subnet_ids" {
 }
 
 # Store Private Subnet IDs in SSM
-resource "aws_ssm_parameter" "app_private_subnet_ids" {
+resource "aws_ssm_parameter" "app_subnet_ids" {
   name  = "/${local.name_prefix}/app_subnet_ids"
   type  = "StringList"
   value = join(",", aws_subnet.app_private[*].id)
@@ -214,7 +215,7 @@ resource "aws_ssm_parameter" "app_private_subnet_ids" {
 }
 
 # Store DB Subnet IDs in SSM
-resource "aws_ssm_parameter" "db_private_subnet_ids" {
+resource "aws_ssm_parameter" "db_subnet_ids" {
   name  = "/${local.name_prefix}/db_subnet_ids"
   type  = "StringList"
   value = join(",", aws_subnet.db_private[*].id)
@@ -265,35 +266,35 @@ resource "aws_ssm_parameter" "nat_id" {
 
 ##################################################################################
 # Retrieve Networking Credentials from SSM Parameter Store
-# Fetch AVAILABILITY ZONES
+# Retrieve AVAILABILITY ZONES
 data "aws_availability_zones" "available" {
   state = "available"
 }
 
-# Fetch VPC ID from SSM Parameter Store
+# Retrieve VPC ID from SSM Parameter Store
 data "aws_ssm_parameter" "vpc_id" {
   name = "/${local.name_prefix}/vpc_id"
 
   depends_on = [aws_ssm_parameter.vpc_id]
 }
 
-# Fetch Subnet IDS from SSM Parameter Store
+# Retrieve Subnet IDS from SSM Parameter Store
 data "aws_ssm_parameter" "public_subnet_ids" {
   name = "/${local.name_prefix}/public_subnet_ids"
 
   depends_on = [aws_ssm_parameter.public_subnet_ids]
 }
 
-# Fetch App Private Subnet IDs from SSM Parameter Store
-data "aws_ssm_parameter" "app_private_subnet_ids" {
+# Retrieve App Private Subnet IDs from SSM Parameter Store
+data "aws_ssm_parameter" "app_subnet_ids" {
   name = "/${local.name_prefix}/app_subnet_ids"
 
-  depends_on = [aws_ssm_parameter.app_private_subnet_ids]
+  depends_on = [aws_ssm_parameter.app_subnet_ids]
 }
 
-# Fetch DB Private Subnet IDS from SSM Parameter Store
-data "aws_ssm_parameter" "db_private_subnet_ids" {
+# Retrieve DB Private Subnet IDS from SSM Parameter Store
+data "aws_ssm_parameter" "db_subnet_ids" {
   name = "/${local.name_prefix}/db_subnet_ids"
 
-  depends_on = [aws_ssm_parameter.db_private_subnet_ids]
+  depends_on = [aws_ssm_parameter.db_subnet_ids]
 }
