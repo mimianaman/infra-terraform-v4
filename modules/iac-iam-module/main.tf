@@ -65,11 +65,10 @@ resource "aws_iam_role" "ec2_role" {
 # Attach AWS-managed policies
 resource "aws_iam_role_policy_attachment" "ec2_managed_ssm" {
   for_each = toset([
-    var.iam_ssm_fullaccess_policy_arn,
     var.iam_ssm_maintenance_window_policy_arn,
     var.iam_ssm_managed_instance_core_policy_arn,
     var.iam_ec2_ssm_policy_arn,
-    var.aws_budgets_actions_with_ssm_policy_arn,
+    var.amazon_ssm_patch_association_policy_arn,
   ])
 
   role       = aws_iam_role.ec2_role.name
@@ -139,8 +138,8 @@ resource "aws_ssm_parameter" "ecs_execution_role_arn" {
   name  = "/${local.name_prefix}/ecs_execution_role_arn"
   type  = "String"
   value = aws_iam_role.ecs_execution_role.arn
-  
-  tags  = local.common_tags
+
+  tags = local.common_tags
 }
 
 
@@ -149,6 +148,6 @@ resource "aws_ssm_parameter" "ecs_task_role_arn" {
   name  = "/${local.name_prefix}/ecs_task_role_arn"
   type  = "String"
   value = aws_iam_role.ecs_task_role.arn
-  
-  tags  = local.common_tags
+
+  tags = local.common_tags
 }

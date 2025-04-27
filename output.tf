@@ -107,7 +107,7 @@ output "ecs_sg_id" {
   value       = module.security.ecs_sg_id
 }
 
-# Output the MySQL Security Group ID
+# Output the mssql Security Group ID
 output "mysql_sg_id" {
   description = "Security Group ID for the RDS Instance"
   value       = module.security.mysql_sg_id
@@ -202,57 +202,50 @@ output "ecs_cluster_id" {
   value       = module.compute.ecs_cluster_id
 }
 
+
+
 # # ----------------------------
 # # Database (RDS) Outputs
 # # ----------------------------
 
-# # Output the endpoint of the RDS instance
-# output "rds_endpoint" {
-#   description = "RDS database endpoint"
-#   value       = module.database.rds_endpoint
-# }
+# Output the endpoint of the RDS instance
+output "rds_endpoint" {
+  description = "RDS mssql database endpoint"
+  value       = module.database.mysql_endpoint
+}
 
-# # Output the username used by the RDS instance
-# output "rds_username" {
-#   description = "RDS database port"
-#   value       = module.database.rds_username
-#   sensitive = true
-# }
+# Output RDS Postgres endpoint
+output "postgres_endpoint" {
+  description = "RDS Postgres database endpoint"
+  value       = module.database.postgres_endpoint
+}
 
-# # Output the password used by the RDS instance
-# output "rds_password" {
-#   description = "RDS database password"
-#   value       = module.database.rds_password
-#   sensitive = true
-# }
+# ----------------------------
+# ElastiCache Outputs
+# ----------------------------
 
+# Output the Redis endpoint
+output "redis_endpoint" {
+  description = "Endpoint address of ElastiCache Redis"
+  value       = module.services.redis_endpoints
+}
 
-# # ----------------------------
-# # ElastiCache Outputs
-# # ----------------------------
+# ----------------------------
+# Kafka (MSK) Outputs
+# ----------------------------
 
-# # Output the Redis endpoint
-# output "redis_endpoint" {
-#   description = "Endpoint address of ElastiCache Redis"
-#   value       = module.services.redis_endpoints
-# }
+# Output the bootstrap broker endpoints for MSK
+output "msk_bootstrap_brokers" {
+  description = "Bootstrap broker string for Kafka MSK cluster"
+  value       = module.services.msk_bootstrap_brokers_plaintext
+}
 
-# # ----------------------------
-# # Kafka (MSK) Outputs
-# # ----------------------------
+# Output the MSK cluster bootstrap brokers for TLS connections
+output "msk_bootstrap_brokers_tls" {
+  value = module.services.msk_bootstrap_brokers_tls
+}
 
-# # Output the bootstrap broker endpoints for MSK
-# output "msk_bootstrap_brokers" {
-#   description = "Bootstrap broker string for Kafka MSK cluster"
-#   value       = module.services.msk_bootstrap_brokers_plaintext
-# }
-
-# # Output the MSK cluster bootstrap brokers for TLS connections
-# output "msk_bootstrap_brokers_tls" {
-#   value = module.services.msk_bootstrap_brokers_tls
-# }
-
-# # Output the MSK cluster bootstrap brokers for SASL SCRAM authentication
-# output "msk_bootstrap_brokers_sasl_scram" {
-#   value = module.services.msk_bootstrap_brokers_sasl_scram
-# }
+# Output the MSK cluster bootstrap brokers for SASL SCRAM authentication
+output "msk_bootstrap_brokers_sasl_scram" {
+  value = module.services.msk_bootstrap_brokers_sasl_scram
+}

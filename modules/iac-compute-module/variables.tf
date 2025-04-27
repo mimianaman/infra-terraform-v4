@@ -52,20 +52,20 @@ variable "app_version" {
 # Task Definition CPU
 variable "task_cpu" {
   description = "CPu allocation for Task Definition"
-  type = number
+  type        = number
 }
 
 
 # Memory Allocation for Task Definition
 variable "task_memory" {
   description = "Memory allocation for Task Definition"
-  type = number
+  type        = number
 }
 
 # Container User
 variable "container_user" {
   description = "User for the container"
-  type = string
+  type        = string
 }
 
 # Availability Zones Count
@@ -77,17 +77,29 @@ variable "availability_zones_count" {
 # ECS Maximum Capacity
 variable "ecs_max_capacity" {
   description = "Maximum capacity for the ECS cluster"
-  type = number
+  type        = number
 }
 
 # CPU Target Value
 variable "cpu_target_value" {
   description = "Target value for CPU utilization"
-  type = number
+  type        = number
 }
 
 # Memory Target Value
 variable "memory_target_value" {
   description = "Target value for memory utilization"
-  type = number
+  type        = number
+}
+
+variable "cpu_credits" {
+  description = "Credit specification for CPU usage (standard or unlimited)"
+  type        = string
+  default     = "standard"
+}
+
+# KeyPair Name
+variable "key_name" {
+  description = "Name of the EC2 key pair"
+  type        = string
 }

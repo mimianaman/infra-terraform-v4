@@ -19,7 +19,7 @@ locals {
   waf_metric_name     = "${local.name_prefix}-waf-metric"
   jump_sg_name        = "${local.name_prefix}-jump-sg"
   ecs_sg_name         = "${local.name_prefix}-ecs-sg"
-  mysql_sg_name       = "${local.name_prefix}-mysql-sg"
+  mysql_sg_name       = "${local.name_prefix}-mssql-sg"
   postgres_sg_name    = "${local.name_prefix}-postgres-sg"
   redis_sg_name       = "${local.name_prefix}-redis-sg"
   alb_sg_name         = "${local.name_prefix}-alb-sg"
@@ -81,7 +81,7 @@ resource "aws_wafv2_web_acl" "alb_waf" {
 resource "aws_security_group" "jump_sg" {
   name        = local.jump_sg_name
   description = "Security group for Jump Box"
-  vpc_id = data.aws_ssm_parameter.vpc_id.value
+  vpc_id      = data.aws_ssm_parameter.vpc_id.value
 
   ingress {
     from_port   = var.ssh_port
@@ -129,7 +129,9 @@ resource "aws_security_group" "alb_sg" {
     cidr_blocks = [var.public_destination_cidr]
   }
 
-  tags = local.common_tags
+  tags = merge(local.common_tags, {
+    Name = local.alb_sg_name
+  })
 }
 
 # Create Security Group for ECS
@@ -159,13 +161,15 @@ resource "aws_security_group" "ecs_sg" {
     cidr_blocks = [var.public_destination_cidr]
   }
 
-  tags = local.common_tags
+  tags = merge(local.common_tags, {
+    Name = local.ecs_sg_name
+  })
 }
 
-# Create Security Group for MySQL
+# Create Security Group for mssql
 resource "aws_security_group" "mysql_sg" {
   name        = local.mysql_sg_name
-  description = "MySQL SG: Allow traffic from ECS"
+  description = "mssql SG: Allow traffic from ECS"
   vpc_id      = data.aws_ssm_parameter.vpc_id.value
 
   ingress {
@@ -182,7 +186,9 @@ resource "aws_security_group" "mysql_sg" {
     cidr_blocks = [var.public_destination_cidr]
   }
 
-  tags = local.common_tags
+  tags = merge(local.common_tags, {
+    Name = local.mysql_sg_name
+  })
 }
 
 # Create Security Group for Postgres
@@ -205,7 +211,9 @@ resource "aws_security_group" "postgres_sg" {
     cidr_blocks = [var.public_destination_cidr]
   }
 
-  tags = local.common_tags
+  tags = merge(local.common_tags, {
+    Name = local.postgres_sg_name
+  })
 }
 
 # Create Security Group for Redis
@@ -228,7 +236,9 @@ resource "aws_security_group" "redis_sg" {
     cidr_blocks = [var.public_destination_cidr]
   }
 
-  tags = local.common_tags
+  tags = merge(local.common_tags, {
+    Name = local.jump_sg_name
+  })
 }
 
 # Create Security Group for Kafka
@@ -250,6 +260,10 @@ resource "aws_security_group" "kafka_sg" {
     protocol    = "-1"
     cidr_blocks = [var.public_destination_cidr]
   }
+
+  tags = merge(local.common_tags, {
+    Name = local.jump_sg_name
+  })
 }
 
 # -----------------------------------------------------------------
@@ -292,7 +306,7 @@ resource "aws_ssm_parameter" "ecs_sg_id" {
   tags = local.common_tags
 }
 
-# Save MySQL Security Group ID in SSM Parameter Store
+# Save mssql Security Group ID in SSM Parameter Store
 resource "aws_ssm_parameter" "mysql_sg_id" {
   name  = "/${local.name_prefix}/mysql_sg_id"
   type  = "String"

@@ -2,6 +2,7 @@
 locals {
   # Naming convention for resources
   name_prefix = "${terraform.workspace}-${var.project_name}"
+  # az_names = slice(data.aws_availability_zones.available.names, 0, var.availability_zones_count)
 
   # Common tags for all resources
   common_tags = {
@@ -76,9 +77,7 @@ resource "aws_subnet" "public" {
 
   tags = merge(local.common_tags, {
     # Name subnet according to az
-    Name                     = "${local.public_subnet_name}-${element(data.aws_availability_zones.available.names, count.index)}"
-    "kubernetes.io/role/elb" = "1" # For EKS if needed later
-    "Type"                   = "Public"
+    Name = "${local.public_subnet_name}-az-${count.index}-${replace(element(data.aws_availability_zones.available.names, count.index), var.region, "")}"
   })
 }
 
@@ -90,7 +89,7 @@ resource "aws_subnet" "app_private" {
   availability_zone = element(data.aws_availability_zones.available.names, count.index)
 
   tags = merge(local.common_tags, {
-    Name                     = "${local.app_subnet_name}-${element(data.aws_availability_zones.available.names, count.index)}"
+    Name                     = "${local.app_subnet_name}-az-${count.index}-${replace(element(data.aws_availability_zones.available.names, count.index), var.region, "")}"
     "kubernetes.io/role/elb" = "1" # For EKS if needed later
     "Type"                   = "Private"
   })
@@ -104,7 +103,7 @@ resource "aws_subnet" "db_private" {
   availability_zone = element(data.aws_availability_zones.available.names, count.index)
 
   tags = merge(local.common_tags, {
-    Name                     = "${local.private_subnet_name}-${element(data.aws_availability_zones.available.names, count.index)}"
+    Name                     = "${local.private_subnet_name}-az-${count.index}-${replace(element(data.aws_availability_zones.available.names, count.index), var.region, "")}"
     "kubernetes.io/role/elb" = "1" # For EKS if needed later
     "Type"                   = "Private"
   })

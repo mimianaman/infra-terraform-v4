@@ -60,9 +60,9 @@ variable "public_destination_cidr" {
   type        = string
 }
 
-# MySQL Port
+# mssql Port
 variable "mysql_port" {
-  description = "value of mysql port"
+  description = "value of mssql port"
   type        = number
 }
 

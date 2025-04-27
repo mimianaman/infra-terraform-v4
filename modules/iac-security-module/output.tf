@@ -21,7 +21,7 @@ output "ecs_sg_id" {
   value = aws_security_group.ecs_sg.id
 }
 
-# Output MySQL SG ID
+# Output mssql SG ID
 output "mysql_sg_id" {
   value = aws_security_group.mysql_sg.id
 }

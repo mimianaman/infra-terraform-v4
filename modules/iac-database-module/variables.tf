@@ -43,19 +43,38 @@ variable "db_storage_size" {
 }
 
 # DB Engine
-variable "db_engine" {
-  description = "DB engine"
+variable "mssql_db_engine" {
+  description = "mssql DB engine"
   type        = string
 }
 
 # Username
-variable "db_username" {
+variable "mysql_db_username" {
   description = "Username for the database"
   type        = string
 }
 
-# DB Name
-variable "db_name" {
+# mssql DB Name
+variable "mssql_db_name" {
+  description = "Name of the database"
+  type        = string
+}
+
+# Postgres DB Username
+variable "postgres_db_username" {
+  description = "Username for the database"
+  type        = string
+}
+
+# Postgres DB Engine
+variable "postgres_db_engine" {
+  description = "Postgres DB engine"
+  type        = string
+}
+
+
+# Postgres DB Name
+variable "postgres_db_name" {
   description = "Name of the database"
   type        = string
 }

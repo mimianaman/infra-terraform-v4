@@ -28,12 +28,6 @@ variable "project_name" {
   type        = string
 }
 
-# SSM Full Access Policy ARN
-variable "iam_ssm_fullaccess_policy_arn" {
-  description = "Amazon SSM Full Access policy ARN"
-  type        = string
-}
-
 # SSM Maintenance Window Policy ARN
 variable "iam_ssm_maintenance_window_policy_arn" {
   description = "Amazon SSM Maintenance policy ARN"
@@ -52,8 +46,8 @@ variable "iam_ec2_ssm_policy_arn" {
   type        = string
 }
 
-# AWS Budgets Actions Role Policy for Resource Administration with SSM ARN
-variable "aws_budgets_actions_with_ssm_policy_arn" {
-  description = "AWS Budgets Actions Role Policy for Resource Administration with SSM ARN"
+# SSM Pacth Association Role Policy for Resource Patching with SSM ARN
+variable "amazon_ssm_patch_association_policy_arn" {
+  description = "Role Policy for SSM Patching"
   type        = string
 }

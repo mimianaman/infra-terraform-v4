@@ -87,14 +87,14 @@ locals {
 
 # Local variables for resource names
 locals {
-  instance_name     = "${local.name_prefix}-app-server"
-  jump_server_name = "${local.name_prefix}-jump-box"
-  asg_name          = "${local.name_prefix}-asg"
+  instance_name       = "${local.name_prefix}-app-server"
+  jump_server_name    = "${local.name_prefix}-jump-box"
+  asg_name            = "${local.name_prefix}-asg"
   ecr_repository_name = "${local.name_prefix}-ecr-repo"
-  ecs_service_name = "${local.name_prefix}-ecs-service"
-  container_name   = "${local.name_prefix}-container"
-  task_family_name = "${local.name_prefix}-task-family" 
-  ecs_cluster_name = "${local.name_prefix}-ecs-cluster"
+  ecs_service_name    = "${local.name_prefix}-ecs-service"
+  container_name      = "${local.name_prefix}-container"
+  task_family_name    = "${local.name_prefix}-task-family"
+  ecs_cluster_name    = "${local.name_prefix}-ecs-cluster"
 }
 
 ###############################################################################
@@ -106,11 +106,19 @@ resource "aws_instance" "jump_box" {
   subnet_id            = split(",", data.aws_ssm_parameter.public_subnet_ids.value)[0]
   iam_instance_profile = data.aws_iam_instance_profile.ec2_profile.name
   security_groups      = [data.aws_ssm_parameter.jump_sg_id.value]
+  key_name             = var.key_name
 
-  # lifecycle {
-  #   ignore_changes = [
-  #   security_groups]
-  # }
+  credit_specification {
+    cpu_credits = var.cpu_credits
+  }
+
+  lifecycle {
+    ignore_changes = [
+      security_groups,
+      user_data,
+      tags
+    ]
+  }
 
   tags = merge(local.common_tags,
     {
@@ -133,7 +141,7 @@ resource "aws_kms_key" "ecr_key" {
   tags = merge(local.common_tags, {
     Name = "${local.name_prefix}-ecr-key"
   })
-  
+
   lifecycle {
     ignore_changes = [policy, tags]
   }
@@ -149,7 +157,7 @@ resource "aws_kms_alias" "ecr_key_alias" {
 
 # Create ECR Repository
 resource "aws_ecr_repository" "ecr_repo" {
-  name = local.ecr_repository_name
+  name         = local.ecr_repository_name
   force_delete = true
 
   # Ensure image tags are immutable
@@ -157,7 +165,7 @@ resource "aws_ecr_repository" "ecr_repo" {
 
   encryption_configuration {
     encryption_type = "KMS"
-    kms_key        = aws_kms_key.ecr_key.arn
+    kms_key         = aws_kms_key.ecr_key.arn
   }
 
   image_scanning_configuration {
@@ -184,7 +192,7 @@ resource "aws_service_discovery_private_dns_namespace" "ecs" {
   vpc         = data.aws_ssm_parameter.vpc_id.value
 
   tags = merge(local.common_tags, {
-    Name        = "${local.name_prefix}.local"
+    Name = "${local.name_prefix}.local"
   })
 
   lifecycle {
@@ -217,7 +225,7 @@ resource "aws_service_discovery_service" "ecs" {
   }
 
   tags = merge(local.common_tags, {
-    Name        = local.ecs_service_name
+    Name = local.ecs_service_name
   })
 
   lifecycle {
@@ -254,8 +262,8 @@ resource "aws_ecs_task_definition" "task" {
   network_mode             = "awsvpc"
   cpu                      = var.task_cpu
   memory                   = var.task_memory
-  task_role_arn      = data.aws_ssm_parameter.ecs_task_role_arn.value
-  execution_role_arn = data.aws_ssm_parameter.ecs_execution_role_arn.value
+  task_role_arn            = data.aws_ssm_parameter.ecs_task_role_arn.value
+  execution_role_arn       = data.aws_ssm_parameter.ecs_execution_role_arn.value
 
   container_definitions = jsonencode([
     {
@@ -265,14 +273,14 @@ resource "aws_ecs_task_definition" "task" {
       memory    = var.task_memory
       user      = var.container_user
       essential = true
-      
+
       logConfiguration = {
         logDriver = "awslogs"
         options = {
-          "awslogs-group"         = "/ecs/${local.name_prefix}"
-          "awslogs-region"        = var.region
-          "awslogs-stream-prefix" = "ecs"
-          "awslogs-multiline-pattern" = "^\\[\\d{4}-\\d{2}-\\d{2}"  # For better log parsing
+          "awslogs-group"             = "/ecs/${local.name_prefix}"
+          "awslogs-region"            = var.region
+          "awslogs-stream-prefix"     = "ecs"
+          "awslogs-multiline-pattern" = "^\\[\\d{4}-\\d{2}-\\d{2}" # For better log parsing
         }
       }
 
@@ -285,7 +293,7 @@ resource "aws_ecs_task_definition" "task" {
       ]
 
       healthCheck = {
-        command     = [
+        command = [
           "CMD-SHELL",
           "curl -f http://localhost:${var.container_port}/health || exit 1"
         ]
@@ -298,14 +306,14 @@ resource "aws_ecs_task_definition" "task" {
       # Enhanced container security settings
       readonlyRootFilesystem = true
       privileged             = false
-      
+
       linuxParameters = {
         initProcessEnabled = true
         capabilities = {
           drop = ["ALL"]
         }
       }
-      
+
       environment = [
         {
           name  = "NODE_ENV"
@@ -331,7 +339,7 @@ resource "aws_ecs_task_definition" "task" {
   }
 
   tags = merge(local.common_tags, {
-    Name = local.task_family_name,
+    Name        = local.task_family_name,
     Environment = var.environment,
     Project     = var.project_name,
     Owner       = var.owner
@@ -340,19 +348,19 @@ resource "aws_ecs_task_definition" "task" {
 
 # ECS Service with Auto Scaling
 resource "aws_ecs_service" "ecs_service" {
-  name            = local.ecs_service_name
-  cluster         = aws_ecs_cluster.ecs_cluster.arn
-  task_definition = aws_ecs_task_definition.task.arn
-  launch_type     = "FARGATE"
-  deployment_maximum_percent = 200
+  name                               = local.ecs_service_name
+  cluster                            = aws_ecs_cluster.ecs_cluster.arn
+  task_definition                    = aws_ecs_task_definition.task.arn
+  launch_type                        = "FARGATE"
+  deployment_maximum_percent         = 200
   deployment_minimum_healthy_percent = 100
-  force_new_deployment = true
+  force_new_deployment               = true
 
   network_configuration {
-    subnets         = split(",", data.aws_ssm_parameter.app_subnet_ids.value)
-    security_groups = [data.aws_ssm_parameter.ecs_sg_id.value]
+    subnets          = split(",", data.aws_ssm_parameter.app_subnet_ids.value)
+    security_groups  = [data.aws_ssm_parameter.ecs_sg_id.value]
     assign_public_ip = false
-    
+
   }
 
   load_balancer {
@@ -402,7 +410,7 @@ resource "aws_appautoscaling_policy" "cpu_scaling" {
   service_namespace  = aws_appautoscaling_target.ecs_scaling_target.service_namespace
 
   target_tracking_scaling_policy_configuration {
-    target_value = var.cpu_target_value
+    target_value       = var.cpu_target_value
     scale_in_cooldown  = 300
     scale_out_cooldown = 300
 
@@ -421,10 +429,10 @@ resource "aws_appautoscaling_policy" "memory_scaling" {
   service_namespace  = aws_appautoscaling_target.ecs_scaling_target.service_namespace
 
   target_tracking_scaling_policy_configuration {
-    target_value = var.memory_target_value
+    target_value       = var.memory_target_value
     scale_in_cooldown  = 300
     scale_out_cooldown = 300
-    
+
     predefined_metric_specification {
       predefined_metric_type = "ECSServiceAverageMemoryUtilization"
     }
@@ -434,29 +442,29 @@ resource "aws_appautoscaling_policy" "memory_scaling" {
 #-------------------------------------------------------------------------------------------
 # Store Cluster ARN
 resource "aws_ssm_parameter" "ecs_cluster_arn" {
-  name  = "/${local.name_prefix}/ecs_cluster_arn"
-  type  = "String"
-  value = aws_ecs_cluster.ecs_cluster.arn
-  tags  = local.common_tags
+  name       = "/${local.name_prefix}/ecs_cluster_arn"
+  type       = "String"
+  value      = aws_ecs_cluster.ecs_cluster.arn
+  tags       = local.common_tags
   depends_on = [aws_ecs_cluster.ecs_cluster]
 
 }
 
 # Store ECS Cluster ID
 resource "aws_ssm_parameter" "ecs_cluster_id" {
-  name  = "/${local.name_prefix}/ecs_cluster_id"
-  type  = "String"
-  value = aws_ecs_cluster.ecs_cluster.id
-  tags  = local.common_tags
+  name       = "/${local.name_prefix}/ecs_cluster_id"
+  type       = "String"
+  value      = aws_ecs_cluster.ecs_cluster.id
+  tags       = local.common_tags
   depends_on = [aws_ecs_cluster.ecs_cluster]
 
 }
 
 # Store ECS Task Definition ARN
 resource "aws_ssm_parameter" "ecs_task_definition_arn" {
-  name  = "/${local.name_prefix}/ecs_task_definition_arn"
-  type  = "String"
-  value = aws_ecs_task_definition.task.arn
-  tags  = local.common_tags
+  name       = "/${local.name_prefix}/ecs_task_definition_arn"
+  type       = "String"
+  value      = aws_ecs_task_definition.task.arn
+  tags       = local.common_tags
   depends_on = [aws_ecs_task_definition.task]
 }

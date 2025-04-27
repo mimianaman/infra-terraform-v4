@@ -47,11 +47,10 @@ module "security" {
 # Create IAM Module
 module "iam" {
   source                                   = "./modules/iac-iam-module"
-  iam_ssm_fullaccess_policy_arn            = var.ssm_fullaccess_policy_arn
   iam_ssm_maintenance_window_policy_arn    = var.ssm_maintenance_window_policy_arn
   iam_ssm_managed_instance_core_policy_arn = var.ssm_managed_instance_core_policy_arn
   iam_ec2_ssm_policy_arn                   = var.iam_ec2_ssm_policy_arn
-  aws_budgets_actions_with_ssm_policy_arn  = var.aws_budgets_actions_with_ssm_policy_arn
+  amazon_ssm_patch_association_policy_arn  = var.amazon_ssm_patch_association_policy_arn
   environment                              = var.environment
   project_name                             = var.project_name
   managed_by                               = var.managed_by
@@ -80,57 +79,68 @@ module "load_balancer" {
 
 # Create Compute Module
 module "compute" {
-  source               = "./modules/iac-compute-module"
-  region               = var.region
-  ec2_instance_type    = var.ec2_instance_type
-  project_name         = var.project_name
-  managed_by           = var.managed_by
-  owner                = var.owner
-  environment          = var.environment
-  container_port = var.container_port
-  container_user = var.container_user
-  task_cpu = var.task_cpu
-  task_memory = var.task_memory
-  cpu_target_value = var.cpu_target_value
-  memory_target_value = var.memory_target_value
-  ecs_max_capacity = var.ecs_max_capacity
+  source                   = "./modules/iac-compute-module"
+  region                   = var.region
+  key_name                 = var.key_name
+  ec2_instance_type        = var.ec2_instance_type
+  project_name             = var.project_name
+  managed_by               = var.managed_by
+  owner                    = var.owner
+  environment              = var.environment
+  container_port           = var.container_port
+  container_user           = var.container_user
+  task_cpu                 = var.task_cpu
+  task_memory              = var.task_memory
+  cpu_target_value         = var.cpu_target_value
+  memory_target_value      = var.memory_target_value
+  ecs_max_capacity         = var.ecs_max_capacity
   availability_zones_count = var.availability_zones_count
 
   depends_on = [module.load_balancer]
 }
 
-# # Create Database Module
-# module "database" {
-#   source            = "./modules/iac-database-module"
-#   db_instance_class = var.db_instance_class
-#   db_name           = var.db_name
-#   db_engine         = var.db_engine
-#   db_storage_size   = var.db_storage_size
-#   db_username       = var.db_username
-#   environment       = var.environment
-#   project_name      = var.project_name
-#   managed_by        = var.managed_by
-#   owner             = var.owner
-#   region            = var.region
+# Create Database Module
+module "database" {
+  source               = "./modules/iac-database-module"
+  db_instance_class    = var.db_instance_class
+  mssql_db_engine      = var.mssql_db_engine
+  db_storage_size      = var.db_storage_size
+  mysql_db_username    = var.mysql_db_username
+  mssql_db_name        = var.mssql_db_name
+  postgres_db_engine   = var.postgres_db_engine
+  postgres_db_username = var.postgres_db_username
+  postgres_db_name     = var.postgres_db_name
+  environment          = var.environment
+  project_name         = var.project_name
+  managed_by           = var.managed_by
+  owner                = var.owner
+  region               = var.region
 
-#   depends_on = [module.networking, module.security, module.storage]
-# }
+  depends_on = [module.networking, module.security, module.storage]
+}
 
-# # Create Services Module
-# module "services" {
-#   source                   = "./modules/iac-services-module"
-#   elasticache_engine       = var.elasticache_engine
-#   elasticache_port         = var.elasticache_port
-#   kafka_version            = var.kafka_version
-#   kafka_instance_type      = var.kafka_instance_type
-#   availability_zones_count = var.availability_zones_count
-#   elasticache_node_type    = var.elasticache_node_type
-#   parameter_group_name     = var.elasticache_parameter_group_name
-#   environment              = var.environment
-#   project_name             = var.project_name
-#   managed_by               = var.managed_by
-#   owner                    = var.owner
-#   region                   = var.region
+# Create Services Module
+module "services" {
+  source                     = "./modules/iac-services-module"
+  redis_engine               = var.redis_engine
+  valkey_engine              = var.valkey_engine
+  num_cache_clusters         = var.num_cache_clusters
+  elasticache_port           = var.elasticache_port
+  parameter_group_family     = var.parameter_group_family
+  valkey_parameter_group_family = var.valkey_parameter_group_family
+  elasticache_engine_version = var.elasticache_engine_version
+  kafka_broker_nodes         = var.kafka_broker_nodes
+  kafka_ebs_volume_size      = var.kafka_ebs_volume_size
+  kafka_version              = var.kafka_version
+  kafka_instance_type        = var.kafka_instance_type
+  availability_zones_count   = var.availability_zones_count
+  elasticache_node_type      = var.elasticache_node_type
+  parameter_group_name       = var.elasticache_parameter_group_name
+  environment                = var.environment
+  project_name               = var.project_name
+  managed_by                 = var.managed_by
+  owner                      = var.owner
+  region                     = var.region
 
-#   depends_on = [module.networking, module.security]
-# }
+  depends_on = [module.networking, module.security]
+}

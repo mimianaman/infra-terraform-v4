@@ -82,9 +82,9 @@ variable "public_destination_cidr" {
   type        = string
 }
 
-# MySQL Port
+# mssql Port
 variable "mysql_port" {
-  description = "value of mysql port"
+  description = "value of mssql port"
   type        = number
 }
 
@@ -106,12 +106,6 @@ variable "kafka_port" {
   type        = number
 }
 
-# SSM Full Access Policy ARN
-variable "ssm_fullaccess_policy_arn" {
-  description = "Amazon SSM Full Access policy ARN"
-  type        = string
-}
-
 # SSM Maintenance Window Policy ARN
 variable "ssm_maintenance_window_policy_arn" {
   description = "Amazon SSM Maintenance policy ARN"
@@ -130,9 +124,9 @@ variable "iam_ec2_ssm_policy_arn" {
   type        = string
 }
 
-# AWS Budgets Actions Role Policy for Resource Administration with SSM ARN
-variable "aws_budgets_actions_with_ssm_policy_arn" {
-  description = "AWS Budgets Actions Role Policy for Resource Administration with SSM ARN"
+# SSM Pacth Association Role Policy for Resource Patching with SSM ARN
+variable "amazon_ssm_patch_association_policy_arn" {
+  description = "Role Policy for SSM Patching"
   type        = string
 }
 
@@ -205,113 +199,172 @@ variable "app_version" {
 # Task Definition CPU
 variable "task_cpu" {
   description = "CPu allocation for Task Definition"
-  type = number
+  type        = number
 }
 
 # Memory Allocation for Task Definition
 variable "task_memory" {
   description = "Memory allocation for Task Definition"
-  type = number
+  type        = number
 }
 
 # Container User
 variable "container_user" {
   description = "User for the container"
-  type = string
+  type        = string
 }
 
 # ECS Maximum Capacity
 variable "ecs_max_capacity" {
   description = "Maximum capacity for the ECS cluster"
-  type = number
+  type        = number
 }
 
 # CPU Target Value
 variable "cpu_target_value" {
   description = "Target value for CPU utilization"
-  type = number
+  type        = number
 }
 
 # Memory Target Value
 variable "memory_target_value" {
   description = "Target value for memory utilization"
-  type = number
+  type        = number
 }
 
-# # DB Instance Class
-# variable "db_instance_class" {
-#   description = "DB instance class"
-#   type        = string
-# }
+# DB Instance Class
+variable "db_instance_class" {
+  description = "DB instance class"
+  type        = string
+}
 
-# # DB Storage Size
-# variable "db_storage_size" {
-#   description = "DB storage size in GB"
-#   type        = number
-# }
+# DB Storage Size
+variable "db_storage_size" {
+  description = "DB storage size in GB"
+  type        = number
+}
 
-# # DB Engine
-# variable "db_engine" {
-#   description = "DB engine"
-#   type        = string
-# }
+# DB Engine
+variable "mssql_db_engine" {
+  description = "mssql DB engine"
+  type        = string
+}
 
-# # DB Username
-# variable "db_username" {
-#   description = "Username for the database"
-#   type        = string
-# }
+# Username
+variable "mysql_db_username" {
+  description = "Username for the database"
+  type        = string
+}
 
-# # EC2 Instance Count
-# variable "ec2_instance_count" {
-#   description = "Number of EC2 instances"
-#   type        = number
-# }
+# mssql DB Name
+variable "mssql_db_name" {
+  description = "Name of the database"
+  type        = string
+}
 
-# # Elasticache Node Type
-# variable "elasticache_node_type" {
-#   description = "Node type for the cluster"
-#   type        = string
-# }
+# Postgres DB Username
+variable "postgres_db_username" {
+  description = "Username for the database"
+  type        = string
+}
 
-# # Parameter Group Name
-# variable "elasticache_parameter_group_name" {
-#   description = "Parameter group name for the cluster"
-#   type        = string
-# }
+# Postgres DB Engine
+variable "postgres_db_engine" {
+  description = "Postgres DB engine"
+  type        = string
+}
 
-# # Kafka Version
-# variable "kafka_version" {
-#   description = "Engine version for the cluster"
-#   type        = string
-# }
+# Postgres DB Name
+variable "postgres_db_name" {
+  description = "Name of the database"
+  type        = string
+}
 
-# # AWS ElastiCache Engine
-# variable "elasticache_engine" {
-#   description = "Cluster engine for the ElastiCache cluster"
-#   type        = string
-# }
+# Elasticache Node Type
+variable "elasticache_node_type" {
+  description = "Node type for the cluster"
+  type        = string
+}
 
-# # ElastiCache Port
-# variable "elasticache_port" {
-#   description = "Port for the ElastiCache cluster"
-#   type        = number
-# }
+# Parameter Group Name
+variable "elasticache_parameter_group_name" {
+  description = "Parameter group name for the cluster"
+  type        = string
+}
 
-# # Kafka Port
-# variable "kafka_port" {
-#   description = "Kafka port"
-#   type        = number
-# }
+# Kafka Version
+variable "kafka_version" {
+  description = "Engine version for the cluster"
+  type        = string
+}
 
-# # Kafka Instance Type
-# variable "kafka_instance_type" {
-#   description = "Kafka instance type"
-#   type        = string
-# }
+# Kafka Broker Nodes
+variable "kafka_broker_nodes" {
+  description = "Number of Broker Nodes for MSK Cluster"
+  type        = number
+}
 
-# # DB name
-# variable "db_name" {
-#   description = "Database name"
-#   type        = string
-# }
+# Kafka EBS Volume Size
+variable "kafka_ebs_volume_size" {
+  description = "EBS volume size for the Kafka cluster"
+  type        = number
+}
+
+variable "parameter_group_family" {
+  description = "Parameter group family for the cluster"
+  type        = string
+}
+
+# Valkey Parameter Group Family
+variable "valkey_parameter_group_family" {
+  description = "Parameter group family for the cluster"
+  type        = string
+}
+
+# Elasticache Engine Version
+variable "elasticache_engine_version" {
+  description = "Engine version for the cluster"
+  type        = string
+}
+
+# Elasticache Clusters
+variable "num_cache_clusters" {
+  description = "number of Elastic Cache Clusters"
+  type        = number
+}
+
+# Redis Engine
+variable "redis_engine" {
+  description = "Cluster engine for the ElastiCache cluster"
+  type        = string
+}
+
+# Valkey Engine
+variable "valkey_engine" {
+  description = "Cluster engine for the ElastiCache cluster"
+  type        = string
+}
+
+# ElastiCache Port
+variable "elasticache_port" {
+  description = "Port for the ElastiCache cluster"
+  type        = number
+}
+
+# Kafka Instance Type
+variable "kafka_instance_type" {
+  description = "Kafka instance type"
+  type        = string
+}
+
+# CPU Credit Specification
+variable "cpu_credits" {
+  description = "Credit specification for CPU usage (standard or unlimited)"
+  type        = string
+}
+
+# KeyPair Name
+variable "key_name" {
+  description = "Name of the EC2 key pair"
+  type        = string
+}

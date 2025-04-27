@@ -1,4 +1,4 @@
-# Variables for Storage Module
+# Variables for Backend Configuration
 
 # Region
 variable "region" {
@@ -18,14 +18,14 @@ variable "owner" {
   type        = string
 }
 
-# Environment
-variable "environment" {
-  description = "Environment name"
-  type        = string
-}
-
 # Project Name
 variable "project_name" {
   description = "Project name"
+  type        = string
+}
+
+# Environment
+variable "environment" {
+  description = "Environment name"
   type        = string
 }
