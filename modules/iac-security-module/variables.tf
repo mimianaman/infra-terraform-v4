@@ -61,7 +61,7 @@ variable "public_destination_cidr" {
 }
 
 # mssql Port
-variable "mysql_port" {
+variable "mssql_port" {
   description = "value of mssql port"
   type        = number
 }
@@ -73,7 +73,7 @@ variable "postgres_port" {
 }
 
 # Redis Port
-variable "redis_port" {
+variable "valkey_port" {
   description = "value of redis port"
   type        = number
 }

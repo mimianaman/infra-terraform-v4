@@ -13,7 +13,7 @@
 terraform.tfvars.json
 
 # Ignore sensitive variable definitions
-# *.tfvars
+*.tfvars
 
 # Ignore plan output
 *.tfplan
@@ -22,5 +22,5 @@ terraform.tfvars.json
 *.backup
 
 # Ignore Backend Directory
-# backend\*
+backend\*
 

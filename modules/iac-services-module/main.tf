@@ -1,11 +1,11 @@
 # Local Variables for Naming Convention
 locals {
   # Naming convention for resources
-  name_prefix = "${terraform.workspace}-${var.project_name}"
+  name_prefix = "${var.environment}-${var.project_name}"
 
   # Common tags for all resources
   common_tags = {
-    Environment = terraform.workspace
+    Environment = var.environment
     Managed_by  = var.managed_by
     Owner       = var.owner
     Project     = "${var.project_name}"
@@ -14,11 +14,14 @@ locals {
 
 # Local variables for resource names
 locals {
-  cluster_name                     = "${local.name_prefix}-kafka-cluster"
-  redis_cluster_id                 = "${local.name_prefix}-redis-cluster"
+  cluster_name      = "${local.name_prefix}-kafka-cluster"
   valkey_cluster_id = "${local.name_prefix}-valkey-cluster"
-  subnet_group_name                = "${local.name_prefix}-subnet-group"
-  elasticache_parameter_group_name = "${local.name_prefix}-elasticache-parameter-group"
+  subnet_group_name = "${local.name_prefix}-subnet-group"
+}
+
+# Local variable to enable or disable cluster mode based on environment
+locals {
+  cluster_mode_enabled = var.environment == "prod" ? true : false
 }
 
 #############################################################################
@@ -34,8 +37,8 @@ data "aws_ssm_parameter" "kafa_sg_id" {
 }
 
 # Retrieve Elasticache SG Group IDs from SSM Parameter Store
-data "aws_ssm_parameter" "redis_sg_id" {
-  name = "/${local.name_prefix}/redis_sg_id"
+data "aws_ssm_parameter" "valkey_sg_id" {
+  name = "/${local.name_prefix}/valkey_sg_id"
 }
 
 # Retrieve Kafka SG Group IDs from SSM Parameter Store
@@ -80,10 +83,16 @@ resource "aws_msk_cluster" "kafka" {
     {
       Name = "${local.cluster_name}"
   })
+
+  lifecycle {
+    ignore_changes = [
+      broker_node_group_info[0].security_groups
+    ]
+  }
 }
 
-# Create Elasticache Subnet Group
-resource "aws_elasticache_subnet_group" "redis" {
+# Create Elasticache Valkey Subnet Group
+resource "aws_elasticache_subnet_group" "valkey" {
   name       = local.subnet_group_name
   subnet_ids = split(",", data.aws_ssm_parameter.db_private_subnet_ids.value)
   tags = merge(local.common_tags,
@@ -97,27 +106,28 @@ resource "aws_elasticache_subnet_group" "redis" {
   }
 }
 
-# Create Elasticache Valkey Cluster
+# Create Elasticache Valkey Parameter Group
 resource "aws_elasticache_parameter_group" "valkey" {
-  name   = local.elasticache_parameter_group_name
+  name   = local.valkey_cluster_id
   family = var.valkey_parameter_group_family
 }
 
 # Create Elasticache Valkey Cluster
 resource "aws_elasticache_replication_group" "valkey" {
   replication_group_id       = local.valkey_cluster_id
-  description                = "Redis Cluster"
+  description                = "Elasticache Valkey Cluster"
   node_type                  = var.elasticache_node_type
-  automatic_failover_enabled = true
+  automatic_failover_enabled = var.environment == "prod" ? true : false
+  multi_az_enabled           = var.environment == "prod" ? true : false
   engine                     = var.valkey_engine
-  # engine_version             = var.elasticache_engine_version
-  num_cache_clusters         = var.num_cache_clusters
-  parameter_group_name       = local.elasticache_parameter_group_name
-  port                       = var.elasticache_port
-  subnet_group_name          = aws_elasticache_subnet_group.redis.name
-  security_group_ids         = [data.aws_ssm_parameter.redis_sg_id.value]
-  depends_on = [ aws_elasticache_parameter_group.valkey ]
-
+  num_cache_clusters         = local.cluster_mode_enabled ? null : 1
+  num_node_groups            = local.cluster_mode_enabled ? 1 : null
+  replicas_per_node_group    = local.cluster_mode_enabled ? var.availability_zones_count : null
+  parameter_group_name       = var.valkey_parameter_group_name
+  port                       = var.valkey_port
+  subnet_group_name          = aws_elasticache_subnet_group.valkey.name
+  security_group_ids         = [data.aws_ssm_parameter.valkey_sg_id.value]
+  depends_on                 = [aws_elasticache_parameter_group.valkey]
 
   lifecycle {
     create_before_destroy = true
@@ -126,23 +136,9 @@ resource "aws_elasticache_replication_group" "valkey" {
       node_type,
     ]
   }
-}
 
-# Crete Elasticache Redis Cluster
-resource "aws_elasticache_cluster" "redis" {
-  cluster_id           = local.redis_cluster_id
-  engine               = var.redis_engine
-  node_type            = var.elasticache_node_type
-  num_cache_nodes      = 1
-  parameter_group_name = var.parameter_group_name
-  port                 = var.elasticache_port
-  subnet_group_name    = aws_elasticache_subnet_group.redis.name
-  security_group_ids   = [data.aws_ssm_parameter.redis_sg_id.value]
-
-  lifecycle {
-    ignore_changes = [ 
-      node_type,
-      port
-     ]
-  }
+  tags = merge(local.common_tags,
+    {
+      Name = "${local.valkey_cluster_id}"
+  })
 }

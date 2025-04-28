@@ -6,11 +6,11 @@ data "aws_elb_service_account" "main" {}
 # Local Variables for Naming Conventions
 locals {
   # Naming convention for resources
-  name_prefix = "${terraform.workspace}-${var.project_name}"
+  name_prefix = "${var.environment}-${var.project_name}"
 
   # Common tags for all resources
   common_tags = {
-    Environment = terraform.workspace
+    Environment = var.environment
     Managed_by  = var.managed_by
     Owner       = var.owner
     Project     = "${var.project_name}"

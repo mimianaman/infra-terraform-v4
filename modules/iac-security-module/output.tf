@@ -22,8 +22,8 @@ output "ecs_sg_id" {
 }
 
 # Output mssql SG ID
-output "mysql_sg_id" {
-  value = aws_security_group.mysql_sg.id
+output "mssql_sg_id" {
+  value = aws_security_group.mssql_sg.id
 }
 
 
@@ -33,8 +33,8 @@ output "postgres_sg_id" {
 }
 
 # Output Redis SG ID
-output "redis_sg_id" {
-  value = aws_security_group.redis_sg.id
+output "valkey_sg_id" {
+  value = aws_security_group.valkey_sg.id
 }
 
 # Output Kafka SG ID

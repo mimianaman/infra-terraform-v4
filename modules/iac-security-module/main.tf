@@ -2,11 +2,11 @@
 
 locals {
   # Naming convention for resources
-  name_prefix = "${terraform.workspace}-${var.project_name}"
+  name_prefix = "${var.environment}-${var.project_name}"
 
   # Common tags for all resources
   common_tags = {
-    Environment = terraform.workspace
+    Environment = var.environment
     Managed_by  = var.managed_by
     Owner       = var.owner
     Project     = "${var.project_name}"
@@ -15,16 +15,15 @@ locals {
 
 # Local variables for resource names
 locals {
-  waf_acl_name        = "${local.name_prefix}-waf-acl"
-  waf_metric_name     = "${local.name_prefix}-waf-metric"
-  jump_sg_name        = "${local.name_prefix}-jump-sg"
-  ecs_sg_name         = "${local.name_prefix}-ecs-sg"
-  mysql_sg_name       = "${local.name_prefix}-mssql-sg"
-  postgres_sg_name    = "${local.name_prefix}-postgres-sg"
-  redis_sg_name       = "${local.name_prefix}-redis-sg"
-  alb_sg_name         = "${local.name_prefix}-alb-sg"
-  kafka_sg_name       = "${local.name_prefix}-kafka-sg"
-  elasticache_sg_name = "${local.name_prefix}-elasticache-sg"
+  waf_acl_name     = "${local.name_prefix}-waf-acl"
+  waf_metric_name  = "${local.name_prefix}-waf-metric"
+  jump_sg_name     = "${local.name_prefix}-jump-sg"
+  ecs_sg_name      = "${local.name_prefix}-ecs-sg"
+  mssql_sg_name    = "${local.name_prefix}-mssql-sg"
+  postgres_sg_name = "${local.name_prefix}-postgres-sg"
+  valkey_sg_name   = "${local.name_prefix}-valkey-sg"
+  alb_sg_name      = "${local.name_prefix}-alb-sg"
+  kafka_sg_name    = "${local.name_prefix}-kafka-sg"
 }
 
 # --------------------------------------------------------------------------
@@ -167,14 +166,14 @@ resource "aws_security_group" "ecs_sg" {
 }
 
 # Create Security Group for mssql
-resource "aws_security_group" "mysql_sg" {
-  name        = local.mysql_sg_name
+resource "aws_security_group" "mssql_sg" {
+  name        = local.mssql_sg_name
   description = "mssql SG: Allow traffic from ECS"
   vpc_id      = data.aws_ssm_parameter.vpc_id.value
 
   ingress {
-    from_port       = var.mysql_port
-    to_port         = var.mysql_port
+    from_port       = var.mssql_port
+    to_port         = var.mssql_port
     protocol        = "tcp"
     security_groups = [aws_security_group.ecs_sg.id]
   }
@@ -187,7 +186,7 @@ resource "aws_security_group" "mysql_sg" {
   }
 
   tags = merge(local.common_tags, {
-    Name = local.mysql_sg_name
+    Name = local.mssql_sg_name
   })
 }
 
@@ -216,15 +215,15 @@ resource "aws_security_group" "postgres_sg" {
   })
 }
 
-# Create Security Group for Redis
-resource "aws_security_group" "redis_sg" {
-  name        = local.redis_sg_name
-  description = "Redis SG: Allow traffic from ECS"
+# Create Security Group for Vlakey
+resource "aws_security_group" "valkey_sg" {
+  name        = local.valkey_sg_name
+  description = "Valkey SG: Allow traffic from ECS"
   vpc_id      = data.aws_ssm_parameter.vpc_id.value
 
   ingress {
-    from_port       = var.redis_port
-    to_port         = var.redis_port
+    from_port       = var.valkey_port
+    to_port         = var.valkey_port
     protocol        = "tcp"
     security_groups = [aws_security_group.ecs_sg.id]
   }
@@ -262,7 +261,7 @@ resource "aws_security_group" "kafka_sg" {
   }
 
   tags = merge(local.common_tags, {
-    Name = local.jump_sg_name
+    Name = local.kafka_sg_name
   })
 }
 
@@ -307,10 +306,10 @@ resource "aws_ssm_parameter" "ecs_sg_id" {
 }
 
 # Save mssql Security Group ID in SSM Parameter Store
-resource "aws_ssm_parameter" "mysql_sg_id" {
-  name  = "/${local.name_prefix}/mysql_sg_id"
+resource "aws_ssm_parameter" "mssql_sg_id" {
+  name  = "/${local.name_prefix}/mssql_sg_id"
   type  = "String"
-  value = aws_security_group.mysql_sg.id
+  value = aws_security_group.mssql_sg.id
 
   tags = local.common_tags
 }
@@ -325,10 +324,10 @@ resource "aws_ssm_parameter" "postgres_sg_id" {
 }
 
 # Save Redis Security Group ID in SSM Parameter Store
-resource "aws_ssm_parameter" "redis_sg_id" {
-  name  = "/${local.name_prefix}/redis_sg_id"
+resource "aws_ssm_parameter" "valkey_sg_id" {
+  name  = "/${local.name_prefix}/valkey_sg_id"
   type  = "String"
-  value = aws_security_group.redis_sg.id
+  value = aws_security_group.valkey_sg.id
 
   tags = local.common_tags
 }

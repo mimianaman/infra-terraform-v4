@@ -1,10 +1,10 @@
 # Local Variables for Naming conventions
 locals {
-  name_prefix = "${terraform.workspace}-${var.project_name}"
+  name_prefix = "${var.environment}-${var.project_name}"
 
   # Common tags for all resources
   common_tags = {
-    Environment = terraform.workspace
+    Environment = var.environment
     Managed_by  = var.managed_by
     Owner       = var.owner
     Project     = "${var.project_name}"
@@ -100,15 +100,24 @@ resource "aws_lb" "alb" {
 
   access_logs {
     bucket  = data.aws_s3_bucket.alb_logs.id
-    prefix  = terraform.workspace
+    prefix  = var.environment
     enabled = true
   }
 
-  enable_deletion_protection = terraform.workspace == "prod" ? true : false
+  enable_deletion_protection = var.environment == "prod" ? true : false
 
   tags = merge(local.common_tags, {
     Name = local.alb_name
   })
+
+  lifecycle {
+    create_before_destroy = true
+    ignore_changes = [
+      name,
+      security_groups,
+      subnets
+    ]
+  }
 }
 
 # Create ALB Listener for HTTP (handles HTTP traffic)

@@ -25,7 +25,7 @@ output "vpc_id" {
 }
 
 # Output the list of public subnet IDs
-output "public_subnets" {
+output "public_subnets_ids" {
   description = "List of public subnet IDs"
   value       = module.networking.public_subnet_ids
 }
@@ -37,7 +37,7 @@ output "public_subnet_cidr" {
 }
 
 # Output the list of App private subnet IDs
-output "app_subnets" {
+output "app_subnets_ids" {
   description = "List of private subnet IDs"
   value       = module.networking.app_subnet_ids
 }
@@ -49,7 +49,7 @@ output "app_subnet_cidr" {
 }
 
 # Output the list of DB private subnet IDs
-output "db_subnets" {
+output "db_subnets_ids" {
   description = "List of private subnet IDs"
   value       = module.networking.db_subnet_ids
 }
@@ -110,7 +110,7 @@ output "ecs_sg_id" {
 # Output the mssql Security Group ID
 output "mysql_sg_id" {
   description = "Security Group ID for the RDS Instance"
-  value       = module.security.mysql_sg_id
+  value       = module.security.mssql_sg_id
 }
 
 # Output the Postgres Security Group ID
@@ -121,7 +121,7 @@ output "postgress_sg_id" {
 
 # Output Redis SG ID
 output "redis_sg_id" {
-  value = module.security.redis_sg_id
+  value = module.security.valkey_sg_id
 }
 
 # Output Kafka SG ID
@@ -211,7 +211,7 @@ output "ecs_cluster_id" {
 # Output the endpoint of the RDS instance
 output "rds_endpoint" {
   description = "RDS mssql database endpoint"
-  value       = module.database.mysql_endpoint
+  value       = module.database.mssql_endpoint
 }
 
 # Output RDS Postgres endpoint
@@ -221,13 +221,13 @@ output "postgres_endpoint" {
 }
 
 # ----------------------------
-# ElastiCache Outputs
+# ElastiCache (Valkey) Outputs
 # ----------------------------
 
-# Output the Redis endpoint
-output "redis_endpoint" {
-  description = "Endpoint address of ElastiCache Redis"
-  value       = module.services.redis_endpoints
+# Output the Valkey endpoints (primary, reader, and optionally configuration) from the services module
+output "valkey_endpoints" {
+  description = "Endpoints for the ElastiCache Valkey cluster (primary, reader, configuration)"
+  value       = module.services.valkey_endpoints
 }
 
 # ----------------------------

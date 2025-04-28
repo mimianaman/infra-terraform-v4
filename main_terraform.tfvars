@@ -40,13 +40,10 @@ https_port = 443
 public_destination_cidr = "0.0.0.0/0"
 
 # My SQL Port
-mysql_port = 3306
+mssql_port = 1433
 
 # Postgres Port
 postgres_port = 5432
-
-# Redis Port
-redis_port = 6379
 
 # SSM Maintenance Window Policy ARN
 ssm_maintenance_window_policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonSSMMaintenanceWindowRole"
@@ -119,16 +116,31 @@ memory_target_value = 70
 db_instance_class = "db.t3.micro"
 
 # DB Storage Size
-db_storage_size = 20
+db_storage_size = 50
 
 # mssql DB Engine
-mssql_db_engine = "mssql"
+mssql_db_engine = "sqlserver-ex"
 
 # mssql DB Username
-mysql_db_username = "payjackadmin"
+mssql_db_username = "payjackadmin"
 
 # mssql DB Username
-mssql_db_name = "payjackmysqldb"
+mssql_db_name = "payjackmssqldb"
+
+# DB Max Allocated Storage
+db_max_allocated_storage = 100
+
+# Storage Type
+storage_type = "gp3"
+
+# Skip Final Snapshot
+skip_final_snapshot = true
+
+# Storage Encrypted
+storage_encrypted = true
+
+# Multi-AZ Support
+multi_az = false
 
 # Postgres DB Engine
 postgres_db_engine = "postgres"
@@ -140,8 +152,9 @@ postgres_db_name = "payjackpostgresdb"
 postgres_db_username = "payjackadmin"
 
 # Parameter Group Name
-elasticache_parameter_group_name = "default.redis7"
+valkey_parameter_group_name = "default.valkey8"
 
+# Valkey Parameter Group Family
 valkey_parameter_group_family = "valkey8"
 
 # Kafka Version
@@ -150,18 +163,12 @@ kafka_version = "2.8.0"
 # Valkey Engine
 valkey_engine = "valkey"
 
-# Redis Engine
-redis_engine = "redis"
 
-elasticache_engine_version = "8.0"
-
+# Valkey Cache Cluster Number
 num_cache_clusters = 2
 
-# Parameter Group Family
-parameter_group_family = "redis6.x"
-
-# Elasticache Port
-elasticache_port = 6379
+# Elasticache Valkey Port
+valkey_port = 6379
 
 # Elasticache Node Type
 elasticache_node_type = "cache.t3.medium"
@@ -174,5 +181,3 @@ kafka_port = 9092
 
 # Kafka Instance Type
 kafka_instance_type = "kafka.t3.small"
-
-kafka_broker_nodes = 2

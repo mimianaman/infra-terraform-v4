@@ -83,7 +83,7 @@ variable "public_destination_cidr" {
 }
 
 # mssql Port
-variable "mysql_port" {
+variable "mssql_port" {
   description = "value of mssql port"
   type        = number
 }
@@ -94,9 +94,9 @@ variable "postgres_port" {
   type        = number
 }
 
-# Redis Port
-variable "redis_port" {
-  description = "value of redis port"
+# Valkey Port
+variable "valkey_port" {
+  description = "value of valkey port"
   type        = number
 }
 
@@ -244,6 +244,36 @@ variable "db_storage_size" {
   type        = number
 }
 
+# Storage Type
+variable "storage_type" {
+  description = "Storage type for the DB instance"
+  type        = string
+}
+
+# DB Max Allocated Storage
+variable "db_max_allocated_storage" {
+  description = "DB max allocated storage in GB"
+  type        = number
+}
+
+# Enable or Disable Multi-AZ Support for RDS MSSQL Instance
+variable "multi_az" {
+  description = "Enable or disable Multi-AZ support for RDS MSSQL instance"
+  type        = bool
+}
+
+# Enable or Disable skip final snapshot
+variable "skip_final_snapshot" {
+  description = "Enable or disable skip final snapshot"
+  type        = bool
+}
+
+# Enable or Disable Storage Encryption
+variable "storage_encrypted" {
+  description = "Enable or disable storage encryption"
+  type        = bool
+}
+
 # DB Engine
 variable "mssql_db_engine" {
   description = "mssql DB engine"
@@ -251,7 +281,7 @@ variable "mssql_db_engine" {
 }
 
 # Username
-variable "mysql_db_username" {
+variable "mssql_db_username" {
   description = "Username for the database"
   type        = string
 }
@@ -286,22 +316,10 @@ variable "elasticache_node_type" {
   type        = string
 }
 
-# Parameter Group Name
-variable "elasticache_parameter_group_name" {
-  description = "Parameter group name for the cluster"
-  type        = string
-}
-
 # Kafka Version
 variable "kafka_version" {
   description = "Engine version for the cluster"
   type        = string
-}
-
-# Kafka Broker Nodes
-variable "kafka_broker_nodes" {
-  description = "Number of Broker Nodes for MSK Cluster"
-  type        = number
 }
 
 # Kafka EBS Volume Size
@@ -310,20 +328,15 @@ variable "kafka_ebs_volume_size" {
   type        = number
 }
 
-variable "parameter_group_family" {
-  description = "Parameter group family for the cluster"
-  type        = string
-}
-
 # Valkey Parameter Group Family
 variable "valkey_parameter_group_family" {
   description = "Parameter group family for the cluster"
   type        = string
 }
 
-# Elasticache Engine Version
-variable "elasticache_engine_version" {
-  description = "Engine version for the cluster"
+# Valkey Parameter Group Name
+variable "valkey_parameter_group_name" {
+  description = "Parameter group name for the cluster"
   type        = string
 }
 
@@ -333,22 +346,10 @@ variable "num_cache_clusters" {
   type        = number
 }
 
-# Redis Engine
-variable "redis_engine" {
-  description = "Cluster engine for the ElastiCache cluster"
-  type        = string
-}
-
 # Valkey Engine
 variable "valkey_engine" {
   description = "Cluster engine for the ElastiCache cluster"
   type        = string
-}
-
-# ElastiCache Port
-variable "elasticache_port" {
-  description = "Port for the ElastiCache cluster"
-  type        = number
 }
 
 # Kafka Instance Type

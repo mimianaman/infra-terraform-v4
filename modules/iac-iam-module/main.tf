@@ -1,11 +1,11 @@
 # Local Variables for Naming Conventions
 locals {
   # Naming convention for resources
-  name_prefix = "${terraform.workspace}-${var.project_name}"
+  name_prefix = "${var.environment}-${var.project_name}"
 
   # Common tags for all resources
   common_tags = {
-    Environment = terraform.workspace
+    Environment = var.environment
     Managed_by  = var.managed_by
     Owner       = var.owner
     Project     = "${var.project_name}"
@@ -51,10 +51,9 @@ data "aws_iam_policy" "ssm_read_only" {
   name = "AmazonSSMReadOnlyAccess"
 }
 
-############################################################################# 
-
+# --------------------------------------------------------------------------
 # Create IAM roles and policies for EC2 instances
-# This module creates IAM roles and policies for EC2 instances
+# ---------------------------------------------------------------------------
 
 # Create Admin Role
 resource "aws_iam_role" "ec2_role" {
@@ -131,7 +130,95 @@ resource "aws_iam_role_policy_attachment" "ecs_task_ssm" {
   policy_arn = data.aws_iam_policy.ssm_read_only.arn
 }
 
-# ---------------------------------------------------------------------------------------
+#--------------------------------------------------------------------------------------------------------------------
+# Create IAM roles and policies for RDS instances
+# -------------------------------------------------------------------------------------------------------------------
+
+# Create IAM Role for RDS Enhanced Monitoring
+resource "aws_iam_role" "rds_enhanced_monitoring_role" {
+  name = "rds-enhanced-monitoring-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Action = "sts:AssumeRole",
+      Principal = {
+        Service = "monitoring.rds.amazonaws.com",
+      },
+      Effect = "Allow",
+      Sid    = "",
+    }],
+  })
+}
+
+# Create IAM Policy for RDS Enhanced Monitoring
+resource "aws_iam_policy" "rds_enhanced_monitoring_policy" {
+  name        = "rds-enhanced-monitoring-policy"
+  description = "Policy for RDS Enhanced Monitoring"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Action = [
+        "logs:CreateLogStream",
+        "logs:PutLogEvents",
+        "logs:CreateLogGroup",
+        "s3:*"
+      ],
+      Effect   = "Allow",
+      Resource = "*",
+    }],
+  })
+}
+
+# Attach IAM Policy to RDS Enhanced Monitoring Role
+resource "aws_iam_role_policy_attachment" "rds_enhanced_monitoring" {
+  role       = aws_iam_role.rds_enhanced_monitoring_role.name
+  policy_arn = aws_iam_policy.rds_enhanced_monitoring_policy.arn
+}
+
+# Create IAM Role for RDS Native Backup
+resource "aws_iam_role" "rds_nativebackup_role" {
+  name = "rds-nativebackup-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Effect = "Allow",
+      Principal = {
+        Service = "rds.amazonaws.com",
+      },
+      Action = "sts:AssumeRole",
+    }],
+  })
+}
+
+# Create IAM Policy for RDS Native Backup
+resource "aws_iam_policy" "rds_nativebackup_policy" {
+  name        = "rds-nativebackup-policy"
+  description = "Policy for RDS Native Backup"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Action = [
+        "s3:*"
+      ],
+      Effect   = "Allow",
+      Resource = "*",
+    }],
+  })
+}
+
+# Attach IAM Policy to RDS Native Backup Role
+resource "aws_iam_role_policy_attachment" "rds_nativebackup" {
+  role       = aws_iam_role.rds_nativebackup_role.name
+  policy_arn = aws_iam_policy.rds_nativebackup_policy.arn
+}
+
+# --------------------------------------------------------------------------------------------------------------------
+# Create SSM Parameter Store for IAM Role ARNs
+# --------------------------------------------------------------------------------------------------------------------
 
 # Store ECS Execution Role ARN in SSM Parameter Store
 resource "aws_ssm_parameter" "ecs_execution_role_arn" {
@@ -142,12 +229,29 @@ resource "aws_ssm_parameter" "ecs_execution_role_arn" {
   tags = local.common_tags
 }
 
-
 # Store ECS Task Role ARN in SSM Parameter Store
 resource "aws_ssm_parameter" "ecs_task_role_arn" {
   name  = "/${local.name_prefix}/ecs_task_role_arn"
   type  = "String"
   value = aws_iam_role.ecs_task_role.arn
+
+  tags = local.common_tags
+}
+
+# Store RDS Enhanced Monitoring Role ARN in SSM Parameter Store
+resource "aws_ssm_parameter" "rds_enhanced_monitoring_role_arn" {
+  name  = "/${local.name_prefix}/rds_enhanced_monitoring_role_arn"
+  type  = "String"
+  value = aws_iam_role.rds_enhanced_monitoring_role.arn
+
+  tags = local.common_tags
+}
+
+# Store RDS Native Backup Role ARN in SSM Parameter Store
+resource "aws_ssm_parameter" "rds_nativebackup_role_arn" {
+  name  = "/${local.name_prefix}/rds_nativebackup_role_arn"
+  type  = "String"
+  value = aws_iam_role.rds_nativebackup_role.arn
 
   tags = local.common_tags
 }

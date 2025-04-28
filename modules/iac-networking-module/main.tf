@@ -1,12 +1,15 @@
 # Local Variables for Naming Conventions
 locals {
   # Naming convention for resources
-  name_prefix = "${terraform.workspace}-${var.project_name}"
-  # az_names = slice(data.aws_availability_zones.available.names, 0, var.availability_zones_count)
+  name_prefix = "${var.environment}-${var.project_name}"
+  az_suffix = [
+    for az in data.aws_availability_zones.available.names :
+    regex("[0-9]+[a-z]$", az)
+  ]
 
   # Common tags for all resources
   common_tags = {
-    Environment = terraform.workspace
+    Environment = var.environment
     Managed_by  = var.managed_by
     Owner       = var.owner
     Project     = "${var.project_name}"
@@ -55,7 +58,6 @@ resource "aws_vpc" "main" {
   tags = merge(local.common_tags, {
     Name = "${local.vpc_name}"
   })
-
 }
 
 # Create Internet Gateway and Attach to VPC
@@ -76,8 +78,10 @@ resource "aws_subnet" "public" {
   map_public_ip_on_launch = true
 
   tags = merge(local.common_tags, {
-    # Name subnet according to az
-    Name = "${local.public_subnet_name}-az-${count.index}-${replace(element(data.aws_availability_zones.available.names, count.index), var.region, "")}"
+    Name  = "${local.public_subnet_name}-az-${local.az_suffix[count.index]}"
+    AName = element(data.aws_availability_zones.available.names, count.index)
+    AZ    = local.az_suffix[count.index]
+    Type  = "Public"
   })
 }
 
@@ -89,7 +93,8 @@ resource "aws_subnet" "app_private" {
   availability_zone = element(data.aws_availability_zones.available.names, count.index)
 
   tags = merge(local.common_tags, {
-    Name                     = "${local.app_subnet_name}-az-${count.index}-${replace(element(data.aws_availability_zones.available.names, count.index), var.region, "")}"
+    Name                     = "${local.app_subnet_name}-az-${local.az_suffix[count.index]}"
+    AName                    = element(data.aws_availability_zones.available.names, count.index)
     "kubernetes.io/role/elb" = "1" # For EKS if needed later
     "Type"                   = "Private"
   })
@@ -103,7 +108,8 @@ resource "aws_subnet" "db_private" {
   availability_zone = element(data.aws_availability_zones.available.names, count.index)
 
   tags = merge(local.common_tags, {
-    Name                     = "${local.private_subnet_name}-az-${count.index}-${replace(element(data.aws_availability_zones.available.names, count.index), var.region, "")}"
+    Name                     = "${local.private_subnet_name}-az-${local.az_suffix[count.index]}"
+    AName                    = element(data.aws_availability_zones.available.names, count.index)
     "kubernetes.io/role/elb" = "1" # For EKS if needed later
     "Type"                   = "Private"
   })

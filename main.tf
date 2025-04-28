@@ -27,11 +27,11 @@ module "networking" {
 module "security" {
   source                  = "./modules/iac-security-module"
   ssh_port                = var.ssh_port
-  mysql_port              = var.mysql_port
+  mssql_port              = var.mssql_port
   http_port               = var.http_port
   https_port              = var.https_port
   my_ip                   = var.my_ip
-  redis_port              = var.redis_port
+  valkey_port             = var.valkey_port
   kafka_port              = var.kafka_port
   postgres_port           = var.postgres_port
   public_destination_cidr = var.public_destination_cidr
@@ -101,46 +101,48 @@ module "compute" {
 
 # Create Database Module
 module "database" {
-  source               = "./modules/iac-database-module"
-  db_instance_class    = var.db_instance_class
-  mssql_db_engine      = var.mssql_db_engine
-  db_storage_size      = var.db_storage_size
-  mysql_db_username    = var.mysql_db_username
-  mssql_db_name        = var.mssql_db_name
-  postgres_db_engine   = var.postgres_db_engine
-  postgres_db_username = var.postgres_db_username
-  postgres_db_name     = var.postgres_db_name
-  environment          = var.environment
-  project_name         = var.project_name
-  managed_by           = var.managed_by
-  owner                = var.owner
-  region               = var.region
+  source                   = "./modules/iac-database-module"
+  db_instance_class        = var.db_instance_class
+  mssql_db_engine          = var.mssql_db_engine
+  db_storage_size          = var.db_storage_size
+  mssql_db_username        = var.mssql_db_username
+  mssql_db_name            = var.mssql_db_name
+  postgres_db_engine       = var.postgres_db_engine
+  postgres_db_username     = var.postgres_db_username
+  postgres_db_name         = var.postgres_db_name
+  skip_final_snapshot      = var.skip_final_snapshot
+  mssql_port               = var.mssql_port
+  multi_az                 = var.multi_az
+  db_max_allocated_storage = var.db_max_allocated_storage
+  storage_type             = var.storage_type
+  storage_encrypted        = var.storage_encrypted
+  environment              = var.environment
+  project_name             = var.project_name
+  managed_by               = var.managed_by
+  owner                    = var.owner
+  region                   = var.region
 
-  depends_on = [module.networking, module.security, module.storage]
+  depends_on = [module.networking, module.security, module.storage, module.iam]
 }
 
 # Create Services Module
 module "services" {
-  source                     = "./modules/iac-services-module"
-  redis_engine               = var.redis_engine
-  valkey_engine              = var.valkey_engine
-  num_cache_clusters         = var.num_cache_clusters
-  elasticache_port           = var.elasticache_port
-  parameter_group_family     = var.parameter_group_family
+  source                        = "./modules/iac-services-module"
+  valkey_engine                 = var.valkey_engine
+  num_cache_clusters            = var.num_cache_clusters
+  valkey_port                   = var.valkey_port
   valkey_parameter_group_family = var.valkey_parameter_group_family
-  elasticache_engine_version = var.elasticache_engine_version
-  kafka_broker_nodes         = var.kafka_broker_nodes
-  kafka_ebs_volume_size      = var.kafka_ebs_volume_size
-  kafka_version              = var.kafka_version
-  kafka_instance_type        = var.kafka_instance_type
-  availability_zones_count   = var.availability_zones_count
-  elasticache_node_type      = var.elasticache_node_type
-  parameter_group_name       = var.elasticache_parameter_group_name
-  environment                = var.environment
-  project_name               = var.project_name
-  managed_by                 = var.managed_by
-  owner                      = var.owner
-  region                     = var.region
+  kafka_ebs_volume_size         = var.kafka_ebs_volume_size
+  kafka_version                 = var.kafka_version
+  kafka_instance_type           = var.kafka_instance_type
+  availability_zones_count      = var.availability_zones_count
+  elasticache_node_type         = var.elasticache_node_type
+  valkey_parameter_group_name   = var.valkey_parameter_group_name
+  environment                   = var.environment
+  project_name                  = var.project_name
+  managed_by                    = var.managed_by
+  owner                         = var.owner
+  region                        = var.region
 
   depends_on = [module.networking, module.security]
 }

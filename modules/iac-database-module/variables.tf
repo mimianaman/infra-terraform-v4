@@ -42,14 +42,32 @@ variable "db_storage_size" {
   type        = number
 }
 
+# Storage Type
+variable "storage_type" {
+  description = "Storage type for the DB instance"
+  type        = string
+}
+
+# DB Max Allocated Storage
+variable "db_max_allocated_storage" {
+  description = "DB max allocated storage in GB"
+  type        = number
+}
+
 # DB Engine
 variable "mssql_db_engine" {
   description = "mssql DB engine"
   type        = string
 }
 
+# mssql Port
+variable "mssql_port" {
+  description = "value of mssql port"
+  type        = number
+}
+
 # Username
-variable "mysql_db_username" {
+variable "mssql_db_username" {
   description = "Username for the database"
   type        = string
 }
@@ -58,6 +76,24 @@ variable "mysql_db_username" {
 variable "mssql_db_name" {
   description = "Name of the database"
   type        = string
+}
+
+# Enable or Disable Multi-AZ Support for RDS MSSQL Instance
+variable "multi_az" {
+  description = "Enable or disable Multi-AZ support for RDS MSSQL instance"
+  type        = bool
+}
+
+# Enable or Disable skip final snapshot
+variable "skip_final_snapshot" {
+  description = "Enable or disable skip final snapshot"
+  type        = bool
+}
+
+# Enable or Disable Storage Encryption
+variable "storage_encrypted" {
+  description = "Enable or disable storage encryption"
+  type        = bool
 }
 
 # Postgres DB Username
@@ -78,3 +114,4 @@ variable "postgres_db_name" {
   description = "Name of the database"
   type        = string
 }
+

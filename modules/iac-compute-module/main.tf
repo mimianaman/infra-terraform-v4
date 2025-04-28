@@ -73,11 +73,11 @@ data "aws_ssm_parameter" "alb_target_group_arn" {
 # Local Variables for Naming Conventions
 locals {
   # Naming convention for resources
-  name_prefix = "${terraform.workspace}-${var.project_name}"
+  name_prefix = "${var.environment}-${var.project_name}"
 
   # Common tags for all resources
   common_tags = {
-    Environment = terraform.workspace
+    Environment = var.environment
     AName       = var.region
     Managed_by  = var.managed_by
     Owner       = var.owner
@@ -149,7 +149,7 @@ resource "aws_kms_key" "ecr_key" {
 
 # Create KMS Alias for ECR
 resource "aws_kms_alias" "ecr_key_alias" {
-  name          = "alias/${local.name_prefix}-ecr-key"
+  name          = "alias/${local.name_prefix}-ecr-keyy"
   target_key_id = aws_kms_key.ecr_key.key_id
 }
 
@@ -317,7 +317,7 @@ resource "aws_ecs_task_definition" "task" {
       environment = [
         {
           name  = "NODE_ENV"
-          value = terraform.workspace
+          value = var.environment
         },
         {
           name  = "APP_VERSION"

@@ -17,12 +17,22 @@ output "msk_bootstrap_brokers_sasl_scram" {
 }
 
 # Output Elasticache Cluster Endpoint
-output "redis_endpoints" {
-  value = [
-    for node in aws_elasticache_cluster.redis.cache_nodes : {
-      address = node.address
-      port    = node.port
-    }
-  ]
-  description = "List of Redis node endpoints and their ports"
+output "valkey_primary_endpoints" {
+  value       = aws_elasticache_replication_group.valkey.primary_endpoint_address
+  description = "List of Vlakey node endpoints and their ports"
+}
+
+# Local variable grouping all Valkey endpoints together
+locals {
+  valkey_endpoints = {
+    primary       = aws_elasticache_replication_group.valkey.primary_endpoint_address
+    reader        = aws_elasticache_replication_group.valkey.reader_endpoint_address
+    configuration = local.cluster_mode_enabled ? aws_elasticache_replication_group.valkey.configuration_endpoint_address : null
+  }
+}
+
+# Output all relevant Valkey endpoints in a single output for easy consumption
+output "valkey_endpoints" {
+  description = "All relevant Valkey endpoints (primary, reader, and optionally configuration endpoint)"
+  value       = local.valkey_endpoints
 }
