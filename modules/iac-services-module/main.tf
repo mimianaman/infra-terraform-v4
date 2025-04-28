@@ -22,6 +22,8 @@ locals {
 # Local variable to enable or disable cluster mode based on environment
 locals {
   cluster_mode_enabled = var.environment == "prod" ? true : false
+  db_private_subnet_ids = split(",", data.aws_ssm_parameter.db_private_subnet_ids.value)
+  broker_nodes_subnets = slice(local.db_private_subnet_ids, 0, 2)
 }
 
 #############################################################################
@@ -52,11 +54,11 @@ data "aws_ssm_parameter" "kafka_sg_id" {
 resource "aws_msk_cluster" "kafka" {
   cluster_name           = local.cluster_name
   kafka_version          = var.kafka_version
-  number_of_broker_nodes = var.availability_zones_count
+  number_of_broker_nodes = var.kafka_broker_nodes_count
 
   broker_node_group_info {
     instance_type   = var.kafka_instance_type
-    client_subnets  = split(",", data.aws_ssm_parameter.db_private_subnet_ids.value)
+    client_subnets  = local.broker_nodes_subnets
     security_groups = [data.aws_ssm_parameter.kafka_sg_id.value]
 
     storage_info {

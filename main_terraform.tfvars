@@ -173,6 +173,9 @@ valkey_port = 6379
 # Elasticache Node Type
 elasticache_node_type = "cache.t3.medium"
 
+# Kafka Broker Node Count
+kafka_broker_nodes_count = 2
+
 # Kafka EBS Storage
 kafka_ebs_volume_size = 30
 

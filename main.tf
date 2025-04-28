@@ -129,6 +129,7 @@ module "database" {
 module "services" {
   source                        = "./modules/iac-services-module"
   valkey_engine                 = var.valkey_engine
+  kafka_broker_nodes_count      = var.kafka_broker_nodes_count
   num_cache_clusters            = var.num_cache_clusters
   valkey_port                   = var.valkey_port
   valkey_parameter_group_family = var.valkey_parameter_group_family

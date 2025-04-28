@@ -316,6 +316,12 @@ variable "elasticache_node_type" {
   type        = string
 }
 
+# Kafka Broker Nodes Count
+variable "kafka_broker_nodes_count" {
+  description = "Number of Kafka broker nodes"
+  type        = number
+}
+
 # Kafka Version
 variable "kafka_version" {
   description = "Engine version for the cluster"
