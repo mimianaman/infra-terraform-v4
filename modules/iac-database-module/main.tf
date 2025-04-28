@@ -29,8 +29,6 @@ locals {
   postgres_db_subnet_group_name = "${local.name_prefix}-postgres-db-subnet-group"
 }
 
-
-
 #############################################################################
 
 # Create a mssql RDS instance in a VPC with a security group and subnet group
