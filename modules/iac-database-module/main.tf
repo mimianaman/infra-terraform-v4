@@ -18,12 +18,12 @@ locals {
   mssql_db_name              = "${local.name_prefix}-mssql-db"
   mssql_db_instance_name     = "${local.name_prefix}-mssql-db-instance"
   mssql_db_subnet_group_name = "${local.name_prefix}-db-subnet-group"
-  mssql_secret_name          = "${local.name_prefix}-secret-payjack-db-secret-commot"
+  mssql_secret_name          = "${local.name_prefix}-secret-payjack-db-secret-v6"
 }
 
 # Local variables for postgres db
 locals {
-  postgres_secret_name          = "${local.name_prefix}-secret-payjack-postgres-secret-wetayayou"
+  postgres_secret_name          = "${local.name_prefix}-secret-payjack-postgres-secret-v6"
   postgres_db_name              = "${local.name_prefix}-postgres-db"
   postgres_db_instance_name     = "${local.name_prefix}-postgres-db-instance"
   postgres_db_subnet_group_name = "${local.name_prefix}-postgres-db-subnet-group"
