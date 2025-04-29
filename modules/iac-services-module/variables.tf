@@ -42,6 +42,12 @@ variable "kafka_broker_nodes_count" {
   type        = number
 }
 
+# MSK Kafka Server Properties
+variable "kafka_server_properties" {
+  description = "Kafka server properties"
+  type        = string
+}
+
 # Kafka Version
 variable "kafka_version" {
   description = "Engine version for the cluster"

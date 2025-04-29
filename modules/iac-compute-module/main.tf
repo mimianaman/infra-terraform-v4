@@ -88,7 +88,7 @@ locals {
 # Local variables for resource names
 locals {
   instance_name       = "${local.name_prefix}-app-server"
-  jump_server_name    = "${local.name_prefix}-jump-box"
+  jump_server_name    = "${local.name_prefix}-jumpbox"
   asg_name            = "${local.name_prefix}-asg"
   ecr_repository_name = "${local.name_prefix}-ecr-repo"
   ecs_service_name    = "${local.name_prefix}-ecs-service"

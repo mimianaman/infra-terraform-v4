@@ -17,6 +17,7 @@ locals {
   cluster_name      = "${local.name_prefix}-kafka-cluster"
   valkey_cluster_id = "${local.name_prefix}-valkey-cluster"
   subnet_group_name = "${local.name_prefix}-subnet-group"
+  parameter_group_name = "${local.name_prefix}-parameter-group"
 }
 
 # Local variable to enable or disable cluster mode based on environment
@@ -50,6 +51,12 @@ data "aws_ssm_parameter" "kafka_sg_id" {
 
 ###############################################################################
 
+# Create MSK Kafka Configuration
+resource "aws_msk_configuration" "kafka" {
+  name          = local.parameter_group_name
+  server_properties = var.kafka_server_properties
+}
+
 # Create MSK Kafka Cluster
 resource "aws_msk_cluster" "kafka" {
   cluster_name           = local.cluster_name
@@ -75,10 +82,9 @@ resource "aws_msk_cluster" "kafka" {
     }
   }
 
-  client_authentication {
-    sasl {
-      scram = true
-    }
+  configuration_info {
+    arn      = aws_msk_configuration.kafka.arn
+    revision = 1
   }
 
   tags = merge(local.common_tags,
@@ -97,6 +103,7 @@ resource "aws_msk_cluster" "kafka" {
 resource "aws_elasticache_subnet_group" "valkey" {
   name       = local.subnet_group_name
   subnet_ids = split(",", data.aws_ssm_parameter.db_private_subnet_ids.value)
+  
   tags = merge(local.common_tags,
     {
       Name = "${local.subnet_group_name}"
@@ -111,7 +118,7 @@ resource "aws_elasticache_subnet_group" "valkey" {
 # Create Elasticache Valkey Parameter Group
 resource "aws_elasticache_parameter_group" "valkey" {
   name   = local.valkey_cluster_id
-  family = var.valkey_parameter_group_family
+  family =  var.valkey_parameter_group_family
 }
 
 # Create Elasticache Valkey Cluster
@@ -125,7 +132,7 @@ resource "aws_elasticache_replication_group" "valkey" {
   num_cache_clusters         = local.cluster_mode_enabled ? null : 1
   num_node_groups            = local.cluster_mode_enabled ? 1 : null
   replicas_per_node_group    = local.cluster_mode_enabled ? var.availability_zones_count : null
-  parameter_group_name       = var.valkey_parameter_group_name
+  parameter_group_name       = aws_elasticache_parameter_group.valkey.name
   port                       = var.valkey_port
   subnet_group_name          = aws_elasticache_subnet_group.valkey.name
   security_group_ids         = [data.aws_ssm_parameter.valkey_sg_id.value]
